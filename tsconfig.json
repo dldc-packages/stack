@@ -18,7 +18,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true // required because esbuild would need `dom` lib
   },
   "include": ["src", "tests"]
 }
