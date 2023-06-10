@@ -174,3 +174,5 @@ export class Stack {
     return Stack.applyKeys<Stack>(this, keys, (internal) => new Stack(internal));
   }
 }
+
+export const StackMixin = {};

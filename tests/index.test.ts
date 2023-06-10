@@ -1,4 +1,5 @@
 import { createKey, Stack, StackInternal, KeyProvider } from '../src/mod';
+import { describe, expect, test } from 'vitest';
 
 describe('Stack', () => {
   test('new Stack()', () => {

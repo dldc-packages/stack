@@ -34,7 +34,7 @@ expect(custom instanceof CustomStaack).toBe(true);
 expect(custom instanceof Staack).toBe(true);
 ```
 
-If you want to pass custom arguments to yout CustomStaack you need to override the `withInternal` method:
+If you want to pass custom arguments to yout CustomStaack:
 
 ```ts
 class ParamsStaack extends Staack {
@@ -57,5 +57,3 @@ expect(custom.param).toBe('some value');
 expect(custom instanceof ParamsStaack).toBe(true);
 expect(custom instanceof Staack).toBe(true);
 ```
-
--->
