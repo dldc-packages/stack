@@ -1,11 +1,11 @@
 name: CI & Publish
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
-  main:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
