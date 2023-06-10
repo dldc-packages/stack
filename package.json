@@ -33,7 +33,7 @@
     "build": "rimraf dist deno_dist && tsup --format cjs,esm src/mod.ts --dts src/mod.ts && denoify",
     "lint": "prettier . --check && eslint . && tsc --noEmit",
     "lint:fix": "prettier . --write . && eslint . --fix",
-    "release": "pnpm run build && bumpp",
+    "release": "pnpm run build && npm run test && bumpp && pnpm publish",
     "test": "pnpm run lint && vitest run --coverage",
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
