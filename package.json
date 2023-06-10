@@ -67,8 +67,7 @@
     },
     "github": {
       "release": true,
-      "web": true,
-      "autoGenerate": true
+      "web": true
     }
   },
   "publishConfig": {
