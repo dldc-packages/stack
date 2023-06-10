@@ -33,7 +33,7 @@
     "build": "rimraf dist deno_dist && tsup --format cjs,esm src/mod.ts --dts src/mod.ts && denoify",
     "lint": "prettier . --check && eslint . && tsc --noEmit",
     "lint:fix": "prettier . --write . && eslint . --fix",
-    "release": "pnpm run build && pnpm run test && bumpp && git push --follow-tags",
+    "release": "release-it",
     "test": "pnpm run lint && vitest run --coverage",
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
@@ -51,6 +51,7 @@
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
     "prettier": "^2.8.8",
+    "release-it": "^15.11.0",
     "rimraf": "^5.0.1",
     "tslib": "^2.5.3",
     "tsup": "^6.7.0",
@@ -59,6 +60,11 @@
   "packageManager": "pnpm@8.6.1",
   "engines": {
     "node": ">=18"
+  },
+  "release-it": {
+    "npm": {
+      "publish": false
+    }
   },
   "publishConfig": {
     "access": "public",
