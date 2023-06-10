@@ -62,6 +62,9 @@
     "node": ">=18"
   },
   "release-it": {
+    "hooks": {
+      "before:init": "pnpm test"
+    },
     "npm": {
       "publish": false
     },

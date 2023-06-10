@@ -1,4 +1,4 @@
-# 🏯 Staack [![](https://badgen.net/bundlephobia/minzip/staack)](https://bundlephobia.com/result?p=staack)
+# 🏯 Staack
 
 > A library to create type-safe opaque stacks
 
