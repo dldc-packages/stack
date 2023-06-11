@@ -44,11 +44,7 @@ class ParamsStaack extends Staack {
   }
 
   with(...keys: Array<KeyProvider<any>>): ParamsStaack {
-    return Staack.applyKeys<ParamsStaack>(
-      this,
-      keys,
-      (internal) => new ParamsStaack(this.param, internal)
-    );
+    return Staack.applyKeys<ParamsStaack>(this, keys, (internal) => new ParamsStaack(this.param, internal));
   }
 }
 

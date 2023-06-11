@@ -28,17 +28,9 @@ export interface Key<T, HasDefault extends boolean = boolean> {
   Provider: KeyProviderFn<T, HasDefault>;
 }
 
-export function createKey<T>(options: {
-  name: string;
-  help?: string;
-  defaultValue: T;
-}): Key<T, true>;
+export function createKey<T>(options: { name: string; help?: string; defaultValue: T }): Key<T, true>;
 export function createKey<T>(options: { name: string; help?: string }): Key<T, false>;
-export function createKey<T>(options: {
-  name: string;
-  help?: string;
-  defaultValue?: T;
-}): Key<T, boolean> {
+export function createKey<T>(options: { name: string; help?: string; defaultValue?: T }): Key<T, boolean> {
   const { help, name } = options;
   const Consumer: KeyConsumer<T, any> = {
     name,
@@ -111,9 +103,7 @@ export class Stack {
     return this.readInternal(ctx).found;
   }
 
-  get<T, HasDefault extends boolean>(
-    ctx: KeyConsumer<T, HasDefault>
-  ): HasDefault extends true ? T : T | null {
+  get<T, HasDefault extends boolean>(ctx: KeyConsumer<T, HasDefault>): HasDefault extends true ? T : T | null {
     const res = this.readInternal(ctx);
     if (res.found === false) {
       if (ctx[INTERNAL].hasDefault) {

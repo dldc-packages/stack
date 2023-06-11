@@ -1,4 +1,4 @@
-# 🏯 Staack [![](https://badgen.net/bundlephobia/minzip/staack)](https://bundlephobia.com/result?p=staack)
+# 🏯 Staack
 
 > A library to create type-safe opaque stacks
 
@@ -44,11 +44,7 @@ class ParamsStaack extends Staack {
   }
 
   with(...keys: Array<KeyProvider<any>>): ParamsStaack {
-    return Staack.applyKeys<ParamsStaack>(
-      this,
-      keys,
-      (internal) => new ParamsStaack(this.param, internal)
-    );
+    return Staack.applyKeys<ParamsStaack>(this, keys, (internal) => new ParamsStaack(this.param, internal));
   }
 }
 
