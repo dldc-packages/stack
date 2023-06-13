@@ -1,14 +1,14 @@
-import { createKey, Stack, StackInternal, KeyProvider } from '../src/mod';
 import { describe, expect, test } from 'vitest';
+import { KeyProvider, Staack, StaackInternal, createKey } from '../src/mod';
 
-describe('Stack', () => {
-  test('new Stack()', () => {
-    expect(new Stack()).toBeInstanceOf(Stack);
+describe('Staack', () => {
+  test('new Staack()', () => {
+    expect(new Staack()).toBeInstanceOf(Staack);
   });
 
   test(`Context with 0 should return self`, () => {
     const Ctx = createKey<string>({ name: 'Ctx' });
-    const ctx = new Stack().with(Ctx.Provider(''));
+    const ctx = new Staack().with(Ctx.Provider(''));
     expect(ctx.with()).toBe(ctx);
   });
 
@@ -17,7 +17,7 @@ describe('Stack', () => {
       name: 'CtxWithDefault',
       defaultValue: 'DEFAULT',
     });
-    const emptyCtx = new Stack();
+    const emptyCtx = new Staack();
     expect(emptyCtx.get(CtxWithDefault.Consumer)).toBe('DEFAULT');
     expect(emptyCtx.getOrFail(CtxWithDefault.Consumer)).toBe('DEFAULT');
     expect(emptyCtx.has(CtxWithDefault.Consumer)).toBe(false);
@@ -34,7 +34,7 @@ describe('Stack', () => {
 
   test('Context without default', () => {
     const CtxNoDefault = createKey<string>({ name: 'CtxNoDefault' });
-    const emptyCtx = new Stack();
+    const emptyCtx = new Staack();
     expect(emptyCtx.get(CtxNoDefault.Consumer)).toBe(null);
     expect(() => emptyCtx.getOrFail(CtxNoDefault.Consumer)).toThrow();
     expect(emptyCtx.has(CtxNoDefault.Consumer)).toBe(false);
@@ -44,50 +44,50 @@ describe('Stack', () => {
     expect(ctx.has(CtxNoDefault.Consumer)).toBe(true);
   });
 
-  test('Custom Stack', () => {
-    class CustomStack extends Stack {
+  test('Custom Staack', () => {
+    class CustomStaack extends Staack {
       // You need to override the `with` method to return a new instance of your CustomStack
-      with(...keys: Array<KeyProvider<any>>): CustomStack {
+      with(...keys: Array<KeyProvider<any>>): CustomStaack {
         // Use the static `applyKeys` method to apply keys to the current instance
-        return Stack.applyKeys<CustomStack>(this, keys, (internal) => new CustomStack(internal));
+        return Staack.applyKeys<CustomStaack>(this, keys, (internal) => new CustomStaack(internal));
       }
     }
 
-    const custom = new CustomStack();
-    expect(custom instanceof CustomStack).toBe(true);
-    expect(custom instanceof Stack).toBe(true);
+    const custom = new CustomStaack();
+    expect(custom instanceof CustomStaack).toBe(true);
+    expect(custom instanceof Staack).toBe(true);
     const Ctx = createKey<string>({ name: 'Ctx' });
     const next = custom.with(Ctx.Provider('ok'));
-    expect(next instanceof CustomStack).toBe(true);
-    expect(next instanceof Stack).toBe(true);
+    expect(next instanceof CustomStaack).toBe(true);
+    expect(next instanceof Staack).toBe(true);
   });
 });
 
-test('CustomStackWithParams', () => {
-  class ParamsStack extends Stack {
+test('ParamsStaack (with param)', () => {
+  class ParamsStaack extends Staack {
     // You can pass your own parameters to the constructor
-    constructor(public readonly param: string, internal: StackInternal<ParamsStack> | null = null) {
+    constructor(public readonly param: string, internal: StaackInternal<ParamsStaack> | null = null) {
       super(internal);
     }
 
-    with(...keys: Array<KeyProvider<any>>): ParamsStack {
-      return Stack.applyKeys<ParamsStack>(this, keys, (internal) => new ParamsStack(this.param, internal));
+    with(...keys: Array<KeyProvider<any>>): ParamsStaack {
+      return Staack.applyKeys<ParamsStaack>(this, keys, (internal) => new ParamsStaack(this.param, internal));
     }
   }
 
-  const custom = new ParamsStack('some value');
+  const custom = new ParamsStaack('some value');
   expect(custom.param).toBe('some value');
-  expect(custom instanceof ParamsStack).toBe(true);
-  expect(custom instanceof Stack).toBe(true);
+  expect(custom instanceof ParamsStaack).toBe(true);
+  expect(custom instanceof Staack).toBe(true);
 });
 
-test('create empty stack', () => {
-  expect(new Stack()).toBeInstanceOf(Stack);
+test('create empty staack', () => {
+  expect(new Staack()).toBeInstanceOf(Staack);
 });
 
-test('Debug stack', () => {
+test('Debug staack', () => {
   const ACtx = createKey<string>({ name: 'ACtx', defaultValue: 'A' });
   const BCtx = createKey<string>({ name: 'BCtx', defaultValue: 'B' });
-  const ctx = new Stack().with(ACtx.Provider('a1'), BCtx.Provider('b1'), ACtx.Provider('a2'));
+  const ctx = new Staack().with(ACtx.Provider('a1'), BCtx.Provider('b1'), ACtx.Provider('a2'));
   expect(ctx.debug()).toMatchObject([{ value: 'a1' }, { value: 'b1' }, { value: 'a2' }]);
 });

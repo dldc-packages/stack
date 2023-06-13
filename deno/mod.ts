@@ -46,7 +46,7 @@ export function createKey<T>(options: { name: string; help?: string; defaultValu
   };
 }
 
-export type StackInternal<Parent extends Stack = Stack> = {
+export type StaackInternal<Parent extends Staack = Staack> = {
   readonly provider: KeyProvider<any>;
   readonly parent: Parent;
 };
@@ -60,13 +60,13 @@ export class MissingContextError extends Error {
   }
 }
 
-export class Stack {
+export class Staack {
   static readonly MissingContextError = MissingContextError;
 
-  static applyKeys<T extends Stack>(
+  static applyKeys<T extends Staack>(
     instance: T,
     keys: Array<KeyProvider<any>>,
-    instantiate: (internal: StackInternal<T>) => T
+    instantiate: (internal: StaackInternal<T>) => T
   ): T {
     if (keys.length === 0) {
       return instance;
@@ -76,9 +76,9 @@ export class Stack {
     }, instance);
   }
 
-  private readonly [INTERNAL]: StackInternal | null;
+  private readonly [INTERNAL]: StaackInternal | null;
 
-  constructor(internal: StackInternal<Stack> | null = null) {
+  constructor(internal: StaackInternal<Staack> | null = null) {
     this[INTERNAL] = internal;
   }
 
@@ -133,8 +133,8 @@ export class Stack {
       world[MIID_DEBUG] = idMap;
     }
     const result: Array<{ value: any; ctxId: string }> = [];
-    const traverse = (stack: Stack) => {
-      const internal = stack[INTERNAL];
+    const traverse = (staack: Staack) => {
+      const internal = staack[INTERNAL];
       if (internal === null) {
         return;
       }
@@ -155,9 +155,7 @@ export class Stack {
     return result;
   }
 
-  with(...keys: Array<KeyProvider<any>>): Stack {
-    return Stack.applyKeys<Stack>(this, keys, (internal) => new Stack(internal));
+  with(...keys: Array<KeyProvider<any>>): Staack {
+    return Staack.applyKeys<Staack>(this, keys, (internal) => new Staack(internal));
   }
 }
-
-export const StackMixin = {};
