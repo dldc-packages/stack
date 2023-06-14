@@ -5,7 +5,17 @@
 ## Example
 
 ```ts
-// TODO
+// 1. Create a key with a name and a type
+const NumKey = createKey<number>({ name: 'Num' });
+
+// 2. Create a stack
+const stack = Staack.create();
+
+// 3. Add a value to the stack using the key (Staack is immutable, it returns a new instance)
+const stack2 = stack.with(NumKey.Provider(42));
+
+// 4. Get the value from the stack using the key
+expect(stack2.get(NumKey.Consumer)).toBe(42);
 ```
 
 ## Installation
@@ -22,14 +32,14 @@ You can create your own `Staack`:
 
 ```ts
 class CustomStaack extends Staack {
+  // Override the `create` method to return a new instance of your CustomStack
   static create(...keys: KeyProvider<any, boolean>[]): CustomStaack {
     return new CustomStaack().with(...keys);
   }
 
-  // You need to override the `with` method to return a new instance of your CustomStack
-  with(...keys: Array<KeyProvider<any>>): CustomStaack {
-    // Use the static `applyKeys` method to apply keys to the current instance
-    return Staack.applyKeys<CustomStaack>(this, keys, (internal) => new CustomStaack(internal));
+  // You need to override the `instantiate` method to return a new instance of your CustomStack
+  protected instantiate(staackCore: StaackCoreValue): this {
+    return new CustomStaack(staackCore) as any;
   }
 }
 

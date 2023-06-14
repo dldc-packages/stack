@@ -1,7 +1,7 @@
-import { KeyConsumer, KeyProvider } from './Key';
-import { MissingContextError } from './MissingContextError';
-import { StaackCore, StaackCoreValue } from './StaackCore';
-import { INTERNAL } from './constants';
+import { KeyConsumer, KeyProvider } from './Key.ts';
+import { MissingContextError } from './MissingContextError.ts';
+import { StaackCore, StaackCoreValue } from './StaackCore.ts';
+import { INTERNAL } from './constants.ts';
 
 export class Staack {
   static readonly MissingContextError = MissingContextError;
