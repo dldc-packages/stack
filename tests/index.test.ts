@@ -203,3 +203,12 @@ test('Empty Key', () => {
   expect(ctx.get(Empty.Consumer)).toBe(undefined);
   expect(ctx.has(Empty.Consumer)).toBe(true);
 });
+
+test('Undefined value', () => {
+  const Empty = Key.create<string | undefined>('Maybe String');
+
+  const ctx = new Staack().with(Empty.Provider(undefined));
+
+  expect(ctx.get(Empty.Consumer)).toBe(undefined);
+  expect(ctx.has(Empty.Consumer)).toBe(true);
+});

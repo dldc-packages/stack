@@ -17,9 +17,9 @@ export interface KeyProvider<T, HasDefault extends boolean = boolean> {
   };
 }
 
-export type KeyProviderFn<T, HasDefault extends boolean> = (
-  ...args: undefined extends T ? [] : [value: T]
-) => KeyProvider<T, HasDefault>;
+export type MaybeParam<T> = [T] extends [undefined] ? [value?: undefined] : [value: T];
+
+export type KeyProviderFn<T, HasDefault extends boolean> = (...args: MaybeParam<T>) => KeyProvider<T, HasDefault>;
 
 // Expose both Provider & Consumer because this way you can expose only one of them
 export interface IKey<T, HasDefault extends boolean = boolean> {
