@@ -17,28 +17,47 @@ export interface KeyProvider<T, HasDefault extends boolean = boolean> {
   };
 }
 
-export type KeyProviderFn<T, HasDefault extends boolean> = (value: T) => KeyProvider<T, HasDefault>;
+export type KeyProviderFn<T, HasDefault extends boolean> = (
+  ...args: undefined extends T ? [] : [value: T]
+) => KeyProvider<T, HasDefault>;
 
 // Expose both Provider & Consumer because this way you can expose only one of them
-export interface Key<T, HasDefault extends boolean = boolean> {
+export interface IKey<T, HasDefault extends boolean = boolean> {
   Consumer: KeyConsumer<T, HasDefault>;
   Provider: KeyProviderFn<T, HasDefault>;
 }
 
-export function createKey<T>(options: { name: string; help?: string; defaultValue: T }): Key<T, true>;
-export function createKey<T>(options: { name: string; help?: string }): Key<T, false>;
-export function createKey<T>(options: { name: string; help?: string; defaultValue?: T }): Key<T, boolean> {
-  const { help, name } = options;
-  const Consumer: KeyConsumer<T, any> = {
-    name,
-    [INTERNAL]: {
-      hasDefault: options.defaultValue !== undefined,
-      defaultValue: options.defaultValue,
-      help,
-    },
-  };
+export const Key = (() => {
   return {
-    Consumer,
-    Provider: (value) => ({ name, [INTERNAL]: { value, consumer: Consumer } }),
+    create,
+    createWithDefault,
+    createEmpty,
   };
-}
+
+  function create<T>(name: string, help?: string): IKey<T, false> {
+    return createInternal<T, false>(name, { hasDefault: false, defaultValue: undefined, help });
+  }
+
+  function createWithDefault<T>(name: string, defaultValue: T, help?: string): IKey<T, true> {
+    return createInternal<T, true>(name, { hasDefault: true, defaultValue, help });
+  }
+
+  function createEmpty(name: string, help?: string): IKey<undefined, false> {
+    return createInternal<undefined, false>(name, { hasDefault: false, defaultValue: undefined, help });
+  }
+
+  function createInternal<T, HasDefault extends boolean>(
+    name: string,
+    data: KeyConsumer<T, HasDefault>[typeof INTERNAL]
+  ): IKey<T, HasDefault> {
+    const Consumer: KeyConsumer<T, any> = { name, [INTERNAL]: data };
+    const Provider: KeyProviderFn<T, HasDefault> = (...args) => ({
+      name,
+      [INTERNAL]: { value: args[0] as any, consumer: Consumer },
+    });
+    return {
+      Consumer,
+      Provider,
+    };
+  }
+})();
