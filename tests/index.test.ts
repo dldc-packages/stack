@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { KeyProvider, Staack, StaackCoreValue, createKey } from '../src/mod';
+import { Staack, StaackCoreValue, createKey } from '../src/mod';
 
 describe('Staack', () => {
   test('Gist', () => {
@@ -7,7 +7,7 @@ describe('Staack', () => {
     const NumKey = createKey<number>({ name: 'Num' });
 
     // 2. Create a stack
-    const stack = Staack.create();
+    const stack = new Staack();
 
     // 3. Add a value to the stack using the key (Staack is immutable, it returns a new instance)
     const stack2 = stack.with(NumKey.Provider(42));
@@ -16,13 +16,13 @@ describe('Staack', () => {
     expect(stack2.get(NumKey.Consumer)).toBe(42);
   });
 
-  test('Staack.create()', () => {
-    expect(Staack.create()).toBeInstanceOf(Staack);
+  test('new Staack()', () => {
+    expect(new Staack()).toBeInstanceOf(Staack);
   });
 
   test(`Context with 0 should return self`, () => {
     const Ctx = createKey<string>({ name: 'Ctx' });
-    const ctx = Staack.create().with(Ctx.Provider(''));
+    const ctx = new Staack().with(Ctx.Provider(''));
     expect(ctx.with()).toBe(ctx);
   });
 
@@ -31,7 +31,7 @@ describe('Staack', () => {
       name: 'CtxWithDefault',
       defaultValue: 'DEFAULT',
     });
-    const emptyCtx = Staack.create();
+    const emptyCtx = new Staack();
     expect(emptyCtx.get(CtxWithDefault.Consumer)).toBe('DEFAULT');
     expect(emptyCtx.getOrFail(CtxWithDefault.Consumer)).toBe('DEFAULT');
     expect(emptyCtx.has(CtxWithDefault.Consumer)).toBe(false);
@@ -48,7 +48,7 @@ describe('Staack', () => {
 
   test('Context without default', () => {
     const CtxNoDefault = createKey<string>({ name: 'CtxNoDefault' });
-    const emptyCtx = Staack.create();
+    const emptyCtx = new Staack();
     expect(emptyCtx.get(CtxNoDefault.Consumer)).toBe(null);
     expect(() => emptyCtx.getOrFail(CtxNoDefault.Consumer)).toThrow();
     expect(emptyCtx.has(CtxNoDefault.Consumer)).toBe(false);
@@ -60,7 +60,7 @@ describe('Staack', () => {
 
   test('Override context', () => {
     const Ctx = createKey<string>({ name: 'Ctx' });
-    const ctx1 = Staack.create().with(Ctx.Provider('A'));
+    const ctx1 = new Staack().with(Ctx.Provider('A'));
     expect(ctx1.get(Ctx.Consumer)).toBe('A');
     const ctx2 = ctx1.with(Ctx.Provider('B'));
     expect(ctx2.get(Ctx.Consumer)).toBe('B');
@@ -73,7 +73,7 @@ describe('Staack', () => {
     const Ctx2 = createKey<string>({ name: 'Ctx2' });
     const Ctx3 = createKey<string>({ name: 'Ctx3' });
 
-    const stack = Staack.create(
+    const stack = new Staack().with(
       Ctx1.Provider('1'),
       Ctx2.Provider('2'),
       Ctx3.Provider('3'),
@@ -94,14 +94,16 @@ describe('Staack', () => {
     const Ctx2 = createKey<string>({ name: 'Ctx2' });
     const Ctx3 = createKey<string>({ name: 'Ctx3' });
 
-    const stack = Staack.create(
-      Ctx1.Provider('1'),
-      Ctx2.Provider('2'),
-      Ctx3.Provider('3'),
-      Ctx1.Provider('1.1'),
-      Ctx2.Provider('2.1'),
-      Ctx1.Provider('1.2')
-    ).dedupe();
+    const stack = new Staack()
+      .with(
+        Ctx1.Provider('1'),
+        Ctx2.Provider('2'),
+        Ctx3.Provider('3'),
+        Ctx1.Provider('1.1'),
+        Ctx2.Provider('2.1'),
+        Ctx1.Provider('1.2')
+      )
+      .dedupe();
 
     expect(stack.get(Ctx1.Consumer)).toBe('1.2');
     expect(stack.get(Ctx2.Consumer)).toBe('2.1');
@@ -114,17 +116,13 @@ describe('Staack', () => {
 
 test('Custom Staack', () => {
   class CustomStaack extends Staack {
-    static create(...keys: KeyProvider<any, boolean>[]): CustomStaack {
-      return new CustomStaack().with(...keys);
-    }
-
     // You need to override the `instantiate` method to return a new instance of your CustomStack
     protected instantiate(staackCore: StaackCoreValue): this {
       return new CustomStaack(staackCore) as any;
     }
   }
 
-  const custom = CustomStaack.create();
+  const custom = new CustomStaack();
   expect(custom instanceof CustomStaack).toBe(true);
   expect(custom instanceof Staack).toBe(true);
   const Ctx = createKey<string>({ name: 'Ctx' });
@@ -134,13 +132,9 @@ test('Custom Staack', () => {
 });
 
 test('Should throw if custom stack does not override instantiate', () => {
-  class CustomStaack extends Staack {
-    static create(): CustomStaack {
-      return new CustomStaack();
-    }
-  }
+  class CustomStaack extends Staack {}
 
-  const item = CustomStaack.create();
+  const item = new CustomStaack();
   const Ctx = createKey<string>({ name: 'Ctx' });
 
   expect(() => item.with(Ctx.Provider('hey'))).toThrow();
@@ -169,14 +163,36 @@ test('ParamsStaack (with param)', () => {
   expect(next instanceof Staack).toBe(true);
 });
 
+test('Sttack.merge', () => {
+  const Key1 = createKey<string>({ name: 'Key1' });
+  const Key2 = createKey<string>({ name: 'Key2' });
+
+  const base = new Staack().with(Key1.Provider('1'), Key2.Provider('2'));
+  const other = new Staack().with(Key1.Provider('1.1'), Key2.Provider('2.1'));
+
+  const merged = base.merge(other);
+  expect(merged.get(Key1.Consumer)).toBe('1.1');
+  expect(merged.get(Key2.Consumer)).toBe('2.1');
+
+  const merged2 = other.merge(base);
+  expect(merged2.get(Key1.Consumer)).toBe('1');
+  expect(merged2.get(Key2.Consumer)).toBe('2');
+
+  const mergeEmpty = base.merge(new Staack());
+  expect(mergeEmpty).toBe(base);
+
+  const mergeSelf = base.merge(base);
+  expect(mergeSelf).toBe(base);
+});
+
 test('create empty staack', () => {
-  expect(Staack.create()).toBeInstanceOf(Staack);
+  expect(new Staack()).toBeInstanceOf(Staack);
 });
 
 test('Debug staack', () => {
   const ACtx = createKey<string>({ name: 'ACtx', defaultValue: 'A' });
   const BCtx = createKey<string>({ name: 'BCtx', defaultValue: 'B' });
-  const ctx = Staack.create().with(ACtx.Provider('a1'), BCtx.Provider('b1'), ACtx.Provider('a2'));
+  const ctx = new Staack().with(ACtx.Provider('a1'), BCtx.Provider('b1'), ACtx.Provider('a2'));
   const debugValue = ctx.debug();
   expect(debugValue).toMatchObject([{ value: 'a2' }, { value: 'b1' }, { value: 'a1' }]);
   expect(debugValue[0].ctxId).toBe(debugValue[2].ctxId);

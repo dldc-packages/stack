@@ -1,38 +1,33 @@
 import { KeyConsumer, KeyProvider } from './Key';
-import { MissingContextError } from './MissingContextError';
 import { StaackCore, StaackCoreValue } from './StaackCore';
 import { INTERNAL } from './constants';
 
 export class Staack {
-  static readonly MissingContextError = MissingContextError;
-
   private readonly [INTERNAL]: StaackCoreValue;
 
-  protected constructor(core: StaackCoreValue = null) {
+  constructor(core: StaackCoreValue = null) {
     this[INTERNAL] = core;
   }
 
-  static create(...keys: Array<KeyProvider<any>>): Staack {
-    return new Staack(StaackCore.with(null, ...keys));
-  }
-
-  has(consumer: KeyConsumer<any, any>): boolean {
+  public has(consumer: KeyConsumer<any, any>): boolean {
     return StaackCore.has(this[INTERNAL], consumer);
   }
 
-  get<T, HasDefault extends boolean>(consumer: KeyConsumer<T, HasDefault>): HasDefault extends true ? T : T | null {
+  public get<T, HasDefault extends boolean>(
+    consumer: KeyConsumer<T, HasDefault>
+  ): HasDefault extends true ? T : T | null {
     return StaackCore.get(this[INTERNAL], consumer);
   }
 
-  getAll<T>(consumer: KeyConsumer<T>): IterableIterator<T> {
+  public getAll<T>(consumer: KeyConsumer<T>): IterableIterator<T> {
     return StaackCore.getAll(this[INTERNAL], consumer);
   }
 
-  getOrFail<T>(consumer: KeyConsumer<T>): T {
+  public getOrFail<T>(consumer: KeyConsumer<T>): T {
     return StaackCore.getOrFail(this[INTERNAL], consumer);
   }
 
-  debug(): Array<{ value: any; ctxId: string }> {
+  public debug(): Array<{ value: any; ctxId: string }> {
     return StaackCore.debug(this[INTERNAL]);
   }
 
@@ -53,6 +48,9 @@ export class Staack {
   }
 
   public merge(other: Staack): this {
+    if (other === this) {
+      return this;
+    }
     const nextCore = StaackCore.merge(this[INTERNAL], other[INTERNAL]);
     if (nextCore === this[INTERNAL]) {
       return this;
