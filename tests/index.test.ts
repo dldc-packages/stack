@@ -191,7 +191,11 @@ test('Debug staack', () => {
   const BCtx = Key.createWithDefault<string>('BCtx', 'B');
   const ctx = new Staack().with(ACtx.Provider('a1'), BCtx.Provider('b1'), ACtx.Provider('a2'));
   const debugValue = ctx.debug();
-  expect(debugValue).toMatchObject([{ value: 'a2' }, { value: 'b1' }, { value: 'a1' }]);
+  expect(debugValue).toMatchObject([
+    { value: 'a2', ctxName: 'ACtx' },
+    { value: 'b1', ctxName: 'BCtx' },
+    { value: 'a1', ctxName: 'ACtx' },
+  ]);
   expect(debugValue[0].ctxId).toBe(debugValue[2].ctxId);
 });
 

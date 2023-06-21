@@ -162,7 +162,7 @@ export class StaackCore {
   static debug(staack: StaackCoreValue): Array<{ value: any; ctxId: string }> {
     const world: any = globalThis;
     const idMap = world[DEBUG] || (world[DEBUG] = new Map<any, string>());
-    const result: Array<{ value: any; ctxId: string }> = [];
+    const result: Array<{ value: any; ctxName: string; ctxId: string }> = [];
     traverse(staack);
     return result;
 
@@ -172,13 +172,15 @@ export class StaackCore {
         return;
       }
       const provider = staack[PROVIDER];
-      let ctxId = idMap.get(provider[INTERNAL].consumer);
+      const consumer = provider[INTERNAL].consumer;
+      let ctxId = idMap.get(consumer);
       if (ctxId === undefined) {
         ctxId = Math.random().toString(36).substring(7);
-        idMap.set(provider[INTERNAL].consumer, ctxId);
+        idMap.set(consumer, ctxId);
       }
       result.push({
         ctxId,
+        ctxName: consumer.name,
         value: provider[INTERNAL].value,
       });
       traverse(staack[PARENT]);
