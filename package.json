@@ -1,18 +1,18 @@
 {
-  "name": "staack",
+  "name": "@dldc/stack",
   "version": "3.0.2",
   "description": "A library to create type-safe opaque stacks",
   "keywords": [
     "stack",
     "typescript"
   ],
-  "homepage": "https://github.com/etienne-dldc/staack#readme",
+  "homepage": "https://github.com/dldc-packages/stack#readme",
   "bugs": {
-    "url": "https://github.com/etienne-dldc/staack/issues"
+    "url": "https://github.com/dldc-packages/stack/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/etienne-dldc/staack.git"
+    "url": "git+https://github.com/dldc-packages/stack.git"
   },
   "license": "MIT",
   "author": "Etienne Dldc <e.deladonchamps@gmail.com>",
