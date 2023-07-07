@@ -14,7 +14,7 @@ export class Staack {
   }
 
   public get<T, HasDefault extends boolean>(
-    consumer: KeyConsumer<T, HasDefault>
+    consumer: KeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | null {
     return StaackCore.get(this[INTERNAL], consumer);
   }

@@ -48,7 +48,7 @@ export const Key = (() => {
 
   function createInternal<T, HasDefault extends boolean>(
     name: string,
-    data: KeyConsumer<T, HasDefault>[typeof INTERNAL]
+    data: KeyConsumer<T, HasDefault>[typeof INTERNAL],
   ): IKey<T, HasDefault> {
     const Consumer: KeyConsumer<T, any> = { name, [INTERNAL]: data };
     const Provider: KeyProviderFn<T, HasDefault> = (...args) => ({

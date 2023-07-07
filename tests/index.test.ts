@@ -76,7 +76,7 @@ describe('Staack', () => {
       Ctx3.Provider('3'),
       Ctx1.Provider('1.1'),
       Ctx2.Provider('2.1'),
-      Ctx1.Provider('1.2')
+      Ctx1.Provider('1.2'),
     );
 
     expect(stack.get(Ctx1.Consumer)).toBe('1.2');
@@ -98,7 +98,7 @@ describe('Staack', () => {
         Ctx3.Provider('3'),
         Ctx1.Provider('1.1'),
         Ctx2.Provider('2.1'),
-        Ctx1.Provider('1.2')
+        Ctx1.Provider('1.2'),
       )
       .dedupe();
 
@@ -140,7 +140,10 @@ test('Should throw if custom stack does not override instantiate', () => {
 test('ParamsStaack (with param)', () => {
   class ParamsStaack extends Staack {
     // You can pass your own parameters to the constructor
-    constructor(public readonly param: string, data: StaackCoreValue = null) {
+    constructor(
+      public readonly param: string,
+      data: StaackCoreValue = null,
+    ) {
       super(data);
     }
 

@@ -41,7 +41,7 @@ export class StaackCore {
 
   static get<T, HasDefault extends boolean>(
     staack: StaackCoreValue,
-    consumer: KeyConsumer<T, HasDefault>
+    consumer: KeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | null {
     const res = StaackCore.findFirstMatch(staack, consumer);
     if (res.found === false) {
