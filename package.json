@@ -74,7 +74,7 @@
       "publish": true
     },
     "git": {
-      "changelog": "pnpm run changelog"
+      "changelog": "pnpm run --silent changelog"
     },
     "github": {
       "release": true,
