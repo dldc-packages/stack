@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { Key, Staack, TStaackCoreValue } from '../src/mod';
+import type { TStaackCoreValue } from '../src/mod';
+import { Key, Staack } from '../src/mod';
 
 describe('Staack', () => {
   test('Gist', () => {

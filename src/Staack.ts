@@ -1,5 +1,6 @@
-import { IKeyConsumer, IKeyProvider } from './Key';
-import { StaackCore, TStaackCoreValue } from './StaackCore';
+import type { IKeyConsumer, IKeyProvider } from './Key';
+import type { TStaackCoreValue } from './StaackCore';
+import { StaackCore } from './StaackCore';
 import { INTERNAL } from './constants';
 
 export class Staack {

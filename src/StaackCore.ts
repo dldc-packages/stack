@@ -1,4 +1,4 @@
-import { IKeyConsumer, IKeyProvider } from './Key';
+import type { IKeyConsumer, IKeyProvider } from './Key';
 import { MissingContextError } from './MissingContextError';
 import { DEBUG, INTERNAL, PARENT, PROVIDER } from './constants';
 
@@ -161,7 +161,7 @@ export class StaackCore {
 
   static debug(staack: TStaackCoreValue): Array<{ value: any; ctxId: string }> {
     const world: any = globalThis;
-    const idMap = world[DEBUG] || (world[DEBUG] = new Map<any, string>());
+    const idMap = (world[DEBUG] as WeakMap<any, string>) || (world[DEBUG] = new WeakMap<any, string>());
     const result: Array<{ value: any; ctxName: string; ctxId: string }> = [];
     traverse(staack);
     return result;

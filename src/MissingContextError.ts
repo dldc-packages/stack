@@ -1,4 +1,4 @@
-import { IKeyConsumer } from './Key';
+import type { IKeyConsumer } from './Key';
 import { INTERNAL } from './constants';
 
 export class MissingContextError extends Error {
