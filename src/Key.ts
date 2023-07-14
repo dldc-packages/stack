@@ -1,6 +1,6 @@
 import { INTERNAL } from './constants';
 
-export interface KeyConsumer<T, HasDefault extends boolean = boolean> {
+export interface IKeyConsumer<T, HasDefault extends boolean = boolean> {
   readonly name: string;
   readonly [INTERNAL]: {
     hasDefault: HasDefault;
@@ -9,22 +9,22 @@ export interface KeyConsumer<T, HasDefault extends boolean = boolean> {
   };
 }
 
-export interface KeyProvider<T, HasDefault extends boolean = boolean> {
+export interface IKeyProvider<T, HasDefault extends boolean = boolean> {
   readonly name: string;
   readonly [INTERNAL]: {
-    consumer: KeyConsumer<T, HasDefault>;
+    consumer: IKeyConsumer<T, HasDefault>;
     value: T;
   };
 }
 
-export type MaybeParam<T> = [T] extends [undefined] ? [value?: undefined] : [value: T];
+export type TMaybeParam<T> = [T] extends [undefined] ? [value?: undefined] : [value: T];
 
-export type KeyProviderFn<T, HasDefault extends boolean> = (...args: MaybeParam<T>) => KeyProvider<T, HasDefault>;
+export type TKeyProviderFn<T, HasDefault extends boolean> = (...args: TMaybeParam<T>) => IKeyProvider<T, HasDefault>;
 
 // Expose both Provider & Consumer because this way you can expose only one of them
 export interface IKey<T, HasDefault extends boolean = boolean> {
-  Consumer: KeyConsumer<T, HasDefault>;
-  Provider: KeyProviderFn<T, HasDefault>;
+  Consumer: IKeyConsumer<T, HasDefault>;
+  Provider: TKeyProviderFn<T, HasDefault>;
 }
 
 export const Key = (() => {
@@ -48,10 +48,10 @@ export const Key = (() => {
 
   function createInternal<T, HasDefault extends boolean>(
     name: string,
-    data: KeyConsumer<T, HasDefault>[typeof INTERNAL],
+    data: IKeyConsumer<T, HasDefault>[typeof INTERNAL],
   ): IKey<T, HasDefault> {
-    const Consumer: KeyConsumer<T, any> = { name, [INTERNAL]: data };
-    const Provider: KeyProviderFn<T, HasDefault> = (...args) => ({
+    const Consumer: IKeyConsumer<T, any> = { name, [INTERNAL]: data };
+    const Provider: TKeyProviderFn<T, HasDefault> = (...args) => ({
       name,
       [INTERNAL]: { value: args[0] as any, consumer: Consumer },
     });

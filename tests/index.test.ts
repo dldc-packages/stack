@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { Key, Staack, StaackCoreValue } from '../src/mod';
+import { Key, Staack, TStaackCoreValue } from '../src/mod';
 
 describe('Staack', () => {
   test('Gist', () => {
@@ -114,7 +114,7 @@ describe('Staack', () => {
 test('Custom Staack', () => {
   class CustomStaack extends Staack {
     // You need to override the `instantiate` method to return a new instance of your CustomStack
-    protected instantiate(staackCore: StaackCoreValue): this {
+    protected instantiate(staackCore: TStaackCoreValue): this {
       return new CustomStaack(staackCore) as any;
     }
   }
@@ -142,12 +142,12 @@ test('ParamsStaack (with param)', () => {
     // You can pass your own parameters to the constructor
     constructor(
       public readonly param: string,
-      data: StaackCoreValue = null,
+      data: TStaackCoreValue = null,
     ) {
       super(data);
     }
 
-    protected instantiate(core: StaackCoreValue): this {
+    protected instantiate(core: TStaackCoreValue): this {
       return new ParamsStaack(this.param, core) as any;
     }
   }

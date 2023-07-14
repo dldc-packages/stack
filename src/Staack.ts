@@ -1,29 +1,29 @@
-import { KeyConsumer, KeyProvider } from './Key';
-import { StaackCore, StaackCoreValue } from './StaackCore';
+import { IKeyConsumer, IKeyProvider } from './Key';
+import { StaackCore, TStaackCoreValue } from './StaackCore';
 import { INTERNAL } from './constants';
 
 export class Staack {
-  private readonly [INTERNAL]: StaackCoreValue;
+  private readonly [INTERNAL]: TStaackCoreValue;
 
-  constructor(core: StaackCoreValue = null) {
+  constructor(core: TStaackCoreValue = null) {
     this[INTERNAL] = core;
   }
 
-  public has(consumer: KeyConsumer<any, any>): boolean {
+  public has(consumer: IKeyConsumer<any, any>): boolean {
     return StaackCore.has(this[INTERNAL], consumer);
   }
 
   public get<T, HasDefault extends boolean>(
-    consumer: KeyConsumer<T, HasDefault>,
+    consumer: IKeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | null {
     return StaackCore.get(this[INTERNAL], consumer);
   }
 
-  public getAll<T>(consumer: KeyConsumer<T>): IterableIterator<T> {
+  public getAll<T>(consumer: IKeyConsumer<T>): IterableIterator<T> {
     return StaackCore.getAll(this[INTERNAL], consumer);
   }
 
-  public getOrFail<T>(consumer: KeyConsumer<T>): T {
+  public getOrFail<T>(consumer: IKeyConsumer<T>): T {
     return StaackCore.getOrFail(this[INTERNAL], consumer);
   }
 
@@ -31,7 +31,7 @@ export class Staack {
     return StaackCore.debug(this[INTERNAL]);
   }
 
-  protected instantiate(staackCore: StaackCoreValue): this {
+  protected instantiate(staackCore: TStaackCoreValue): this {
     // make sure we are instantiating the same class
     if (this.constructor !== Staack) {
       throw new Error('Cannot instantiate a Staack subclass, you need to override instantiate()');
@@ -39,7 +39,7 @@ export class Staack {
     return new Staack(staackCore) as any;
   }
 
-  public with(...keys: Array<KeyProvider<any>>): this {
+  public with(...keys: Array<IKeyProvider<any>>): this {
     const nextCore = StaackCore.with(this[INTERNAL], ...keys);
     if (nextCore === this[INTERNAL]) {
       return this;
