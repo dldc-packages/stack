@@ -1,4 +1,4 @@
-# 🏯 Staack
+# 🏯 Stack
 
 > A library to create type-safe opaque stacks
 
@@ -9,9 +9,9 @@
 const NumKey = Key.create<number>('Num');
 
 // 2. Create a stack
-const stack = new Staack();
+const stack = new Stack();
 
-// 3. Add a value to the stack using the key (Staack is immutable, it returns a new instance)
+// 3. Add a value to the stack using the key (Stack is immutable, it returns a new instance)
 const stack2 = stack.with(NumKey.Provider(42));
 
 // 4. Get the value from the stack using the key
@@ -21,24 +21,24 @@ expect(stack2.get(NumKey.Consumer)).toBe(42);
 ## Installation
 
 ```bash
-npm install staack
+npm install stack
 # or
-yarn add staack
+yarn add stack
 ```
 
-## Extending `Staack`
+## Extending `Stack`
 
-You can create your own `Staack`:
+You can create your own `Stack`:
 
 ```ts
-class CustomStaack extends Staack {
+class CustomStack extends Stack {
   // You need to override the `instantiate` method to return a new instance of your CustomStack
-  protected instantiate(staackCore: StaackCoreValue): this {
-    return new CustomStaack(staackCore) as any;
+  protected instantiate(stackCore: StackCoreValue): this {
+    return new CustomStack(stackCore) as any;
   }
 }
 
-const custom = new CustomStaack();
-expect(custom instanceof CustomStaack).toBe(true);
-expect(custom instanceof Staack).toBe(true);
+const custom = new CustomStack();
+expect(custom instanceof CustomStack).toBe(true);
+expect(custom instanceof Stack).toBe(true);
 ```

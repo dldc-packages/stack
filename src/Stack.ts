@@ -1,58 +1,58 @@
 import type { IKeyConsumer, IKeyProvider } from './Key';
-import type { TStaackCoreValue } from './StaackCore';
-import { StaackCore } from './StaackCore';
+import type { TStackCoreValue } from './StackCore';
+import { StackCore } from './StackCore';
 import { INTERNAL } from './constants';
 
-export class Staack {
-  private readonly [INTERNAL]: TStaackCoreValue;
+export class Stack {
+  private readonly [INTERNAL]: TStackCoreValue;
 
-  constructor(core: TStaackCoreValue = null) {
+  constructor(core: TStackCoreValue = null) {
     this[INTERNAL] = core;
   }
 
   public has(consumer: IKeyConsumer<any, any>): boolean {
-    return StaackCore.has(this[INTERNAL], consumer);
+    return StackCore.has(this[INTERNAL], consumer);
   }
 
   public get<T, HasDefault extends boolean>(
     consumer: IKeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | null {
-    return StaackCore.get(this[INTERNAL], consumer);
+    return StackCore.get(this[INTERNAL], consumer);
   }
 
   public getAll<T>(consumer: IKeyConsumer<T>): IterableIterator<T> {
-    return StaackCore.getAll(this[INTERNAL], consumer);
+    return StackCore.getAll(this[INTERNAL], consumer);
   }
 
   public getOrFail<T>(consumer: IKeyConsumer<T>): T {
-    return StaackCore.getOrFail(this[INTERNAL], consumer);
+    return StackCore.getOrFail(this[INTERNAL], consumer);
   }
 
   public debug(): Array<{ value: any; ctxId: string }> {
-    return StaackCore.debug(this[INTERNAL]);
+    return StackCore.debug(this[INTERNAL]);
   }
 
-  protected instantiate(staackCore: TStaackCoreValue): this {
+  protected instantiate(stackCore: TStackCoreValue): this {
     // make sure we are instantiating the same class
-    if (this.constructor !== Staack) {
-      throw new Error('Cannot instantiate a Staack subclass, you need to override instantiate()');
+    if (this.constructor !== Stack) {
+      throw new Error('Cannot instantiate a Stack subclass, you need to override instantiate()');
     }
-    return new Staack(staackCore) as any;
+    return new Stack(stackCore) as any;
   }
 
   public with(...keys: Array<IKeyProvider<any>>): this {
-    const nextCore = StaackCore.with(this[INTERNAL], ...keys);
+    const nextCore = StackCore.with(this[INTERNAL], ...keys);
     if (nextCore === this[INTERNAL]) {
       return this;
     }
     return this.instantiate(nextCore);
   }
 
-  public merge(other: Staack): this {
+  public merge(other: Stack): this {
     if (other === this) {
       return this;
     }
-    const nextCore = StaackCore.merge(this[INTERNAL], other[INTERNAL]);
+    const nextCore = StackCore.merge(this[INTERNAL], other[INTERNAL]);
     if (nextCore === this[INTERNAL]) {
       return this;
     }
@@ -60,7 +60,7 @@ export class Staack {
   }
 
   public dedupe(): this {
-    const nextCore = StaackCore.dedupe(this[INTERNAL]);
+    const nextCore = StackCore.dedupe(this[INTERNAL]);
     if (nextCore === this[INTERNAL]) {
       return this;
     }
