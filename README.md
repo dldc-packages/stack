@@ -28,7 +28,7 @@ yarn add stack
 
 ## Extending `Stack`
 
-You can create your own `Stack`:
+You can create your own `Stack`, this is useful to define custom properties and methods.
 
 ```ts
 class CustomStack extends Stack {

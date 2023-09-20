@@ -1,6 +1,6 @@
 import type { IKeyConsumer, IKeyProvider } from './Key';
 import { MissingContextError } from './MissingContextError';
-import { DEBUG, INTERNAL, PARENT, PROVIDER } from './constants';
+import { DEBUG, PARENT, PROVIDER } from './constants';
 
 export type TStackCoreTuple = [parent: StackCore, provider: IKeyProvider<any>];
 
@@ -26,10 +26,10 @@ export class StackCore {
       return { found: false, value: null };
     }
     const provider = stack[PROVIDER];
-    if (provider[INTERNAL].consumer === consumer) {
+    if (provider.consumer === consumer) {
       return {
         found: true,
-        value: provider[INTERNAL].value,
+        value: provider.value,
       };
     }
     return StackCore.findFirstMatch(stack[PARENT], consumer);
@@ -45,8 +45,8 @@ export class StackCore {
   ): HasDefault extends true ? T : T | null {
     const res = StackCore.findFirstMatch(stack, consumer);
     if (res.found === false) {
-      if (consumer[INTERNAL].hasDefault) {
-        return consumer[INTERNAL].defaultValue as any;
+      if (consumer.hasDefault) {
+        return consumer.defaultValue as any;
       }
       return null as any;
     }
@@ -60,8 +60,8 @@ export class StackCore {
         while (current) {
           const provider = current[PROVIDER];
           current = current[PARENT];
-          if (provider[INTERNAL].consumer === consumer) {
-            return { value: provider[INTERNAL].value, done: false };
+          if (provider.consumer === consumer) {
+            return { value: provider.value, done: false };
           }
         }
         return { value: undefined, done: true };
@@ -75,8 +75,8 @@ export class StackCore {
   static getOrFail<T>(stack: TStackCoreValue, consumer: IKeyConsumer<T>): T {
     const res = StackCore.findFirstMatch(stack, consumer);
     if (res.found === false) {
-      if (consumer[INTERNAL].hasDefault) {
-        return consumer[INTERNAL].defaultValue as any;
+      if (consumer.hasDefault) {
+        return consumer.defaultValue as any;
       }
       throw new MissingContextError(consumer);
     }
@@ -140,14 +140,14 @@ export class StackCore {
     let base: TStackCoreValue = stack;
     let baseQueue: IKeyProvider<any>[] = [];
     for (const [item, provider] of StackCore.extract(stack)) {
-      if (seenKeys.has(provider[INTERNAL].consumer)) {
+      if (seenKeys.has(provider.consumer)) {
         // we will skip this one in the final result so we reset base
         base = item[PARENT];
         queue.push(...baseQueue);
         baseQueue = [];
         continue;
       }
-      seenKeys.add(provider[INTERNAL].consumer);
+      seenKeys.add(provider.consumer);
       baseQueue.push(provider);
     }
     if (base === stack) {
@@ -172,7 +172,7 @@ export class StackCore {
         return;
       }
       const provider = stack[PROVIDER];
-      const consumer = provider[INTERNAL].consumer;
+      const consumer = provider.consumer;
       let ctxId = idMap.get(consumer);
       if (ctxId === undefined) {
         ctxId = Math.random().toString(36).substring(7);
@@ -181,7 +181,7 @@ export class StackCore {
       result.push({
         ctxId,
         ctxName: consumer.name,
-        value: provider[INTERNAL].value,
+        value: provider.value,
       });
       traverse(stack[PARENT]);
     }

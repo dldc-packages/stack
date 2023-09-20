@@ -1,30 +1,29 @@
 import { INTERNAL } from './constants';
 
 export interface IKeyConsumer<T, HasDefault extends boolean = boolean> {
+  readonly [INTERNAL]: true;
   readonly name: string;
-  readonly [INTERNAL]: {
-    hasDefault: HasDefault;
-    defaultValue: T | undefined;
-    help?: string;
-  };
+  readonly hasDefault: HasDefault;
+  readonly defaultValue: T | undefined;
 }
 
 export interface IKeyProvider<T, HasDefault extends boolean = boolean> {
+  readonly [INTERNAL]: true;
   readonly name: string;
-  readonly [INTERNAL]: {
-    consumer: IKeyConsumer<T, HasDefault>;
-    value: T;
-  };
+  readonly consumer: IKeyConsumer<T, HasDefault>;
+  readonly value: T;
 }
 
-export type TMaybeParam<T> = [T] extends [undefined] ? [value?: undefined] : [value: T];
+export type TArgsBase = readonly any[];
 
-export type TKeyProviderFn<T, HasDefault extends boolean> = (...args: TMaybeParam<T>) => IKeyProvider<T, HasDefault>;
+export type TKeyProviderFn<T, HasDefault extends boolean, Args extends TArgsBase> = (
+  ...args: Args
+) => IKeyProvider<T, HasDefault>;
 
 // Expose both Provider & Consumer because this way you can expose only one of them
-export interface IKey<T, HasDefault extends boolean = boolean> {
+export interface IKey<T, HasDefault extends boolean = boolean, Args extends TArgsBase = [T]> {
   Consumer: IKeyConsumer<T, HasDefault>;
-  Provider: TKeyProviderFn<T, HasDefault>;
+  Provider: TKeyProviderFn<T, HasDefault, Args>;
 }
 
 export const Key = (() => {
@@ -34,30 +33,30 @@ export const Key = (() => {
     createEmpty,
   };
 
-  function create<T>(name: string, help?: string): IKey<T, false> {
-    return createInternal<T, false>(name, { hasDefault: false, defaultValue: undefined, help });
+  function create<T>(name: string): IKey<T, false, [value: T]> {
+    return createInternal<T, false, [value: T]>(name, false, undefined);
   }
 
-  function createWithDefault<T>(name: string, defaultValue: T, help?: string): IKey<T, true> {
-    return createInternal<T, true>(name, { hasDefault: true, defaultValue, help });
+  function createWithDefault<T>(name: string, defaultValue: T): IKey<T, true, [value: T]> {
+    return createInternal<T, true, [value: T]>(name, true, defaultValue);
   }
 
-  function createEmpty(name: string, help?: string): IKey<undefined, false> {
-    return createInternal<undefined, false>(name, { hasDefault: false, defaultValue: undefined, help });
+  function createEmpty(name: string): IKey<undefined, false, []> {
+    return createInternal<undefined, false, []>(name, false, undefined);
   }
 
-  function createInternal<T, HasDefault extends boolean>(
+  function createInternal<T, HasDefault extends boolean, Args extends TArgsBase>(
     name: string,
-    data: IKeyConsumer<T, HasDefault>[typeof INTERNAL],
-  ): IKey<T, HasDefault> {
-    const Consumer: IKeyConsumer<T, any> = { name, [INTERNAL]: data };
-    const Provider: TKeyProviderFn<T, HasDefault> = (...args) => ({
-      name,
-      [INTERNAL]: { value: args[0] as any, consumer: Consumer },
-    });
+    hasDefault: HasDefault,
+    defaultValue: T | undefined,
+  ): IKey<T, HasDefault, Args> {
+    const Consumer: IKeyConsumer<T, any> = { [INTERNAL]: true, name, hasDefault, defaultValue };
+    const Provider = (value: T) => {
+      return { [INTERNAL]: true, name, consumer: Consumer, value };
+    };
     return {
       Consumer,
-      Provider,
+      Provider: Provider as unknown as TKeyProviderFn<T, HasDefault, Args>,
     };
   }
 })();
