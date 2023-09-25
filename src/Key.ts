@@ -21,10 +21,13 @@ export type TKeyProviderFn<T, HasDefault extends boolean, Args extends TArgsBase
 ) => IKeyProvider<T, HasDefault>;
 
 // Expose both Provider & Consumer because this way you can expose only one of them
-export interface IKey<T, HasDefault extends boolean = boolean, Args extends TArgsBase = [T]> {
+export interface IKeyBase<T, HasDefault extends boolean, Args extends TArgsBase = [T]> {
   Consumer: IKeyConsumer<T, HasDefault>;
   Provider: TKeyProviderFn<T, HasDefault, Args>;
 }
+
+export type TKey<T, HasDefault extends boolean = false> = IKeyBase<T, HasDefault, [value: T]>;
+export type TVoidKey<HasDefault extends boolean = false> = IKeyBase<undefined, HasDefault, []>;
 
 export const Key = (() => {
   return {
@@ -33,15 +36,15 @@ export const Key = (() => {
     createEmpty,
   };
 
-  function create<T>(name: string): IKey<T, false, [value: T]> {
+  function create<T>(name: string): TKey<T, false> {
     return createInternal<T, false, [value: T]>(name, false, undefined);
   }
 
-  function createWithDefault<T>(name: string, defaultValue: T): IKey<T, true, [value: T]> {
+  function createWithDefault<T>(name: string, defaultValue: T): TKey<T, true> {
     return createInternal<T, true, [value: T]>(name, true, defaultValue);
   }
 
-  function createEmpty(name: string): IKey<undefined, false, []> {
+  function createEmpty(name: string): TVoidKey<false> {
     return createInternal<undefined, false, []>(name, false, undefined);
   }
 
@@ -49,7 +52,7 @@ export const Key = (() => {
     name: string,
     hasDefault: HasDefault,
     defaultValue: T | undefined,
-  ): IKey<T, HasDefault, Args> {
+  ): IKeyBase<T, HasDefault, Args> {
     const Consumer: IKeyConsumer<T, any> = { [INTERNAL]: true, name, hasDefault, defaultValue };
     const Provider = (value: T) => {
       return { [INTERNAL]: true, name, consumer: Consumer, value };
