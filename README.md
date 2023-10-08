@@ -111,11 +111,11 @@ const hasValue = stack.has(NumKey.Consumer);
 
 This will return `true` if a value was set using the `Provider`.
 
-### Debigging a `Stack`
+### Debugging a `Stack`
 
 To inspect the content of a stack, you can use the `inspect()` method. It will return a string representation of the stack.
 
-_Note_: The `toString()` of s `Stack` will alwyas return `Stack { ... }`, if you want to inspect the content of a stack, you need to use the `inspect()` method.
+_Note_: The `toString()` of a `Stack` will always return `Stack { ... }`, if you want to inspect the content of a stack, you need to use the `inspect()` method.
 
 #### Customizing the `inspect()` method
 
