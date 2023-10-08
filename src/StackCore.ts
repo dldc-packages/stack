@@ -1,6 +1,7 @@
 import type { IKeyConsumer, IKeyProvider } from './Key';
 import { MissingContextError } from './MissingContextError';
-import { DEBUG, PARENT, PROVIDER } from './constants';
+import { DEBUG, NODE_INSPECT, PARENT, PROVIDER } from './constants';
+import { indent } from './indent';
 
 export type TStackCoreTuple = [parent: StackCore, provider: IKeyProvider<any>];
 
@@ -9,12 +10,38 @@ export type TStackCoreValue = StackCore | null;
 export class StackCore {
   static readonly MissingContextError = MissingContextError;
 
-  private readonly [PARENT]: TStackCoreValue; // Null if root
-  private readonly [PROVIDER]: IKeyProvider<any>;
+  private readonly [PARENT]!: TStackCoreValue; // Null if root
+  private readonly [PROVIDER]!: IKeyProvider<any>;
 
   protected constructor(provider: IKeyProvider<any>, parent: TStackCoreValue = null) {
-    this[PARENT] = parent;
-    this[PROVIDER] = provider;
+    Object.defineProperty(this, PARENT, {
+      enumerable: false,
+      writable: false,
+      value: parent,
+    });
+    Object.defineProperty(this, PROVIDER, {
+      enumerable: false,
+      writable: false,
+      value: provider,
+    });
+    Object.defineProperty(this, NODE_INSPECT, {
+      value: () => this.inspect(),
+    });
+  }
+
+  public toString() {
+    return `StackCore { ... }`;
+  }
+
+  /**
+   * Print a the StackCore with all the providers.
+   */
+  public inspect() {
+    const details = StackCore.inspect(this);
+    if (details === null) {
+      return `StackCore {}`;
+    }
+    return [`StackCore {`, '  ' + indent(details), `}`].join('\n');
   }
 
   /**
@@ -51,6 +78,27 @@ export class StackCore {
       return null as any;
     }
     return res.value;
+  }
+
+  /**
+   * Return a string that represents the content of the stact or null if empty.
+   */
+  static inspect(stack: TStackCoreValue): string | null {
+    if (stack === null) {
+      return null;
+    }
+    const details: string[] = [];
+    for (const [, provider] of StackCore.extract(stack)) {
+      details.unshift(`${provider.consumer.name}: ${provider.consumer.stringify(provider.value)}`);
+    }
+    if (details.length === 0) {
+      return null;
+    }
+    const allDetails = details.join(', ');
+    if (allDetails.length < 60) {
+      return allDetails;
+    }
+    return details.join('\n');
   }
 
   static getAll<T>(stack: TStackCoreValue, consumer: IKeyConsumer<T>): IterableIterator<T> {

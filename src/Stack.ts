@@ -1,13 +1,21 @@
 import type { IKeyConsumer, IKeyProvider } from './Key';
 import type { TStackCoreValue } from './StackCore';
 import { StackCore } from './StackCore';
-import { INTERNAL } from './constants';
+import { INTERNAL, NODE_INSPECT } from './constants';
+import { indent } from './indent';
 
 export class Stack {
-  private readonly [INTERNAL]: TStackCoreValue;
+  private readonly [INTERNAL]!: TStackCoreValue;
 
   constructor(core: TStackCoreValue = null) {
-    this[INTERNAL] = core;
+    Object.defineProperty(this, INTERNAL, {
+      enumerable: false,
+      writable: false,
+      value: core,
+    });
+    Object.defineProperty(this, NODE_INSPECT, {
+      value: () => this.inspect(),
+    });
   }
 
   public has(consumer: IKeyConsumer<any, any>): boolean {
@@ -26,6 +34,19 @@ export class Stack {
 
   public getOrFail<T>(consumer: IKeyConsumer<T>): T {
     return StackCore.getOrFail(this[INTERNAL], consumer);
+  }
+
+  public inspect() {
+    const internal = this[INTERNAL];
+    const details = StackCore.inspect(internal);
+    if (details === null) {
+      return `Stack {}`;
+    }
+    return [`Stack {`, '  ' + indent(details), `}`].join('\n');
+  }
+
+  public toString() {
+    return `Stack { ... }`;
   }
 
   public debug(): Array<{ value: any; ctxId: string }> {

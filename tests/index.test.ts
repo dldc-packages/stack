@@ -109,6 +109,9 @@ describe('Stack', () => {
     expect(Array.from(stack.getAll(Ctx1.Consumer))).toMatchObject(['1.2']);
 
     expect(stack.dedupe()).toBe(stack);
+
+    const empty = new Stack();
+    expect(empty.dedupe()).toBe(empty);
   });
 });
 
@@ -164,7 +167,7 @@ test('ParamsStack (with param)', () => {
   expect(next instanceof Stack).toBe(true);
 });
 
-test('Sttack.merge', () => {
+test('Stack.merge', () => {
   const Key1 = Key.create<string>('Key1');
   const Key2 = Key.create<string>('Key2');
 
@@ -184,6 +187,11 @@ test('Sttack.merge', () => {
 
   const mergeSelf = base.merge(base);
   expect(mergeSelf).toBe(base);
+
+  const empty1 = new Stack();
+  const empty2 = new Stack();
+  const mergeEmpty2 = empty1.merge(empty2);
+  expect(mergeEmpty2).toBe(empty1);
 });
 
 test('create empty stack', () => {
@@ -204,19 +212,80 @@ test('Debug stack', () => {
 });
 
 test('Empty Key', () => {
-  const Empty = Key.createEmpty('Empty');
+  const EmptyKey = Key.createEmpty('Empty');
 
-  const ctx = new Stack().with(Empty.Provider());
+  const ctx = new Stack().with(EmptyKey.Provider());
 
-  expect(ctx.get(Empty.Consumer)).toBe(undefined);
-  expect(ctx.has(Empty.Consumer)).toBe(true);
+  expect(ctx.get(EmptyKey.Consumer)).toBe(undefined);
+  expect(ctx.has(EmptyKey.Consumer)).toBe(true);
 });
 
 test('Undefined value', () => {
-  const Empty = Key.create<string | undefined>('Maybe String');
+  const MaybeStringKey = Key.create<string | undefined>('MaybeString');
 
-  const ctx = new Stack().with(Empty.Provider(undefined));
+  const ctx = new Stack().with(MaybeStringKey.Provider(undefined));
 
-  expect(ctx.get(Empty.Consumer)).toBe(undefined);
-  expect(ctx.has(Empty.Consumer)).toBe(true);
+  expect(ctx.get(MaybeStringKey.Consumer)).toBe(undefined);
+  expect(ctx.has(MaybeStringKey.Consumer)).toBe(true);
+});
+
+test('Stack.toString()', () => {
+  const MaybeStringKey = Key.create<string | undefined>('MaybeString');
+  const ctx = new Stack().with(MaybeStringKey.Provider(undefined));
+
+  expect(ctx.toString()).toBe('Stack { ... }');
+});
+
+test('Stack.inspect()', () => {
+  const ctx1 = new Stack();
+  expect(ctx1.inspect()).toBe('Stack {}');
+
+  const MaybeStringKey = Key.create<string | undefined>('MaybeString');
+  const EmptyKey = Key.createEmpty('Empty');
+  const ctx = new Stack().with(MaybeStringKey.Provider(undefined), EmptyKey.Provider());
+
+  expect(ctx.inspect()).toBe(`Stack {\n  MaybeString: undefined, Empty: [VOID]\n}`);
+});
+
+test('Custom stringify on key', () => {
+  const UserKey = Key.create<{ name: string; email: string }>('User');
+  const UserPrettyKey = Key.create<{ name: string; email: string }>('User', (user) => `${user.name} <${user.email}>`);
+
+  const ctx = new Stack().with(
+    UserKey.Provider({ name: 'John', email: 'john@example.com' }),
+    UserPrettyKey.Provider({ name: 'Jenna', email: 'jenna@example.com' }),
+  );
+
+  expect(ctx.toString()).toBe('Stack { ... }');
+  expect(ctx.inspect()).toBe(
+    `Stack {\n  User: {"name":"John","email":"john@example.com"}\n  User: Jenna <jenna@example.com>\n}`,
+  );
+});
+
+test('Inspect non serializable value', () => {
+  const CircularKey = Key.create<any>('Circular');
+  const circularValue: any = { a: 1, b: 2 };
+  circularValue.circular = circularValue;
+  const ctx = new Stack().with(CircularKey.Provider(circularValue));
+
+  expect(ctx.inspect()).toBe(`Stack {\n  Circular: [NOT SERIALIZABLE]\n}`);
+
+  const CircularPrettyKey = Key.create<any>('Circular', ({ a, b }) => {
+    return JSON.stringify({ a, b, circular: '[Circular]' });
+  });
+  const ctx2 = new Stack().with(CircularPrettyKey.Provider(circularValue));
+  expect(ctx2.inspect()).toBe(`Stack {\n  Circular: {"a":1,"b":2,"circular":"[Circular]"}\n}`);
+});
+
+test('Big object are truncated in inspect', () => {
+  const BigObjectKey = Key.create<any>('BigObject');
+  const ctx = new Stack().with(
+    BigObjectKey.Provider({
+      firstKey: 'some long text',
+      secondKey: 'some long text',
+      thirdKey: 'some long text',
+      fourthKey: 'some long text',
+    }),
+  );
+  expect(ctx.inspect()).toBe(`Stack {\n  BigObject: {"firstKey":"some long text","secondKey":"some long text"...\n}`);
 });
