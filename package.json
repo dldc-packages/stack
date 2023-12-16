@@ -22,11 +22,11 @@
     ".": {
       "import": {
         "types": "./dist/mod.js",
-        "default": "./dist/mod.d.ts"
+        "path": "./dist/mod.d.ts"
       },
       "require": {
         "types": "./dist/mod.djs",
-        "default": "./dist/mod.d.cts"
+        "path": "./dist/mod.d.cts"
       }
     }
   },
