@@ -1,9 +1,9 @@
-import type { IKeyConsumer, IKeyProvider } from './Key';
+import type { TKeyConsumer, TKeyProvider } from './Key';
 import { MissingContextError } from './MissingContextError';
 import { DEBUG, NODE_INSPECT, PARENT, PROVIDER } from './constants';
 import { indent } from './indent';
 
-export type TStackCoreTuple = [parent: StackCore, provider: IKeyProvider<any>];
+export type TStackCoreTuple = [parent: StackCore, provider: TKeyProvider<any>];
 
 export type TStackCoreValue = StackCore | null;
 
@@ -11,9 +11,9 @@ export class StackCore {
   static readonly MissingContextError = MissingContextError;
 
   private readonly [PARENT]!: TStackCoreValue; // Null if root
-  private readonly [PROVIDER]!: IKeyProvider<any>;
+  private readonly [PROVIDER]!: TKeyProvider<any>;
 
-  protected constructor(provider: IKeyProvider<any>, parent: TStackCoreValue = null) {
+  protected constructor(provider: TKeyProvider<any>, parent: TStackCoreValue = null) {
     Object.defineProperty(this, PARENT, {
       enumerable: false,
       writable: false,
@@ -48,7 +48,7 @@ export class StackCore {
    * READ Functions
    */
 
-  static findFirstMatch(stack: TStackCoreValue, consumer: IKeyConsumer<any, any>): { found: boolean; value: any } {
+  static findFirstMatch(stack: TStackCoreValue, consumer: TKeyConsumer<any, any>): { found: boolean; value: any } {
     if (stack === null) {
       return { found: false, value: null };
     }
@@ -62,13 +62,13 @@ export class StackCore {
     return StackCore.findFirstMatch(stack[PARENT], consumer);
   }
 
-  static has(stack: TStackCoreValue, consumer: IKeyConsumer<any, any>): boolean {
+  static has(stack: TStackCoreValue, consumer: TKeyConsumer<any, any>): boolean {
     return StackCore.findFirstMatch(stack, consumer).found;
   }
 
   static get<T, HasDefault extends boolean>(
     stack: TStackCoreValue,
-    consumer: IKeyConsumer<T, HasDefault>,
+    consumer: TKeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | null {
     const res = StackCore.findFirstMatch(stack, consumer);
     if (res.found === false) {
@@ -101,7 +101,7 @@ export class StackCore {
     return details.join('\n');
   }
 
-  static getAll<T>(stack: TStackCoreValue, consumer: IKeyConsumer<T>): IterableIterator<T> {
+  static getAll<T>(stack: TStackCoreValue, consumer: TKeyConsumer<T>): IterableIterator<T> {
     let current: TStackCoreValue = stack;
     return {
       next(): IteratorResult<T> {
@@ -120,7 +120,7 @@ export class StackCore {
     };
   }
 
-  static getOrFail<T>(stack: TStackCoreValue, consumer: IKeyConsumer<T>): T {
+  static getOrFail<T>(stack: TStackCoreValue, consumer: TKeyConsumer<T>): T {
     const res = StackCore.findFirstMatch(stack, consumer);
     if (res.found === false) {
       if (consumer.hasDefault) {
@@ -153,7 +153,7 @@ export class StackCore {
    * WRITE Functions
    */
 
-  static with(stack: TStackCoreValue, ...keys: readonly IKeyProvider<any>[]): TStackCoreValue {
+  static with(stack: TStackCoreValue, ...keys: readonly TKeyProvider<any>[]): TStackCoreValue {
     if (keys.length === 0) {
       return stack;
     }
@@ -183,10 +183,10 @@ export class StackCore {
     if (stack === null) {
       return null;
     }
-    const seenKeys = new Set<IKeyConsumer<any>>();
-    const queue: IKeyProvider<any>[] = [];
+    const seenKeys = new Set<TKeyConsumer<any>>();
+    const queue: TKeyProvider<any>[] = [];
     let base: TStackCoreValue = stack;
-    let baseQueue: IKeyProvider<any>[] = [];
+    let baseQueue: TKeyProvider<any>[] = [];
     for (const [item, provider] of StackCore.extract(stack)) {
       if (seenKeys.has(provider.consumer)) {
         // we will skip this one in the final result so we reset base

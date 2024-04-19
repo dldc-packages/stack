@@ -1,4 +1,4 @@
-import type { IKeyConsumer, IKeyProvider } from './Key';
+import type { TKeyConsumer, TKeyProvider } from './Key';
 import type { TStackCoreValue } from './StackCore';
 import { StackCore } from './StackCore';
 import { INTERNAL, NODE_INSPECT } from './constants';
@@ -18,21 +18,21 @@ export class Stack {
     });
   }
 
-  public has(consumer: IKeyConsumer<any, any>): boolean {
+  public has(consumer: TKeyConsumer<any, any>): boolean {
     return StackCore.has(this[INTERNAL], consumer);
   }
 
   public get<T, HasDefault extends boolean>(
-    consumer: IKeyConsumer<T, HasDefault>,
+    consumer: TKeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | null {
     return StackCore.get(this[INTERNAL], consumer);
   }
 
-  public getAll<T>(consumer: IKeyConsumer<T>): IterableIterator<T> {
+  public getAll<T>(consumer: TKeyConsumer<T>): IterableIterator<T> {
     return StackCore.getAll(this[INTERNAL], consumer);
   }
 
-  public getOrFail<T>(consumer: IKeyConsumer<T>): T {
+  public getOrFail<T>(consumer: TKeyConsumer<T>): T {
     return StackCore.getOrFail(this[INTERNAL], consumer);
   }
 
@@ -61,7 +61,7 @@ export class Stack {
     return new Stack(stackCore) as any;
   }
 
-  public with(...keys: Array<IKeyProvider<any>>): this {
+  public with(...keys: Array<TKeyProvider<any>>): this {
     const nextCore = StackCore.with(this[INTERNAL], ...keys);
     if (nextCore === this[INTERNAL]) {
       return this;

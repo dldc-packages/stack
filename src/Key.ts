@@ -6,7 +6,7 @@ import { INTERNAL } from './constants';
  */
 export type TStringify<T> = (value: T) => string;
 
-export interface IKeyConsumer<T, HasDefault extends boolean = boolean> {
+export interface TKeyConsumer<T, HasDefault extends boolean = boolean> {
   readonly [INTERNAL]: true;
   readonly stringify: TStringify<T>;
   readonly name: string;
@@ -14,10 +14,10 @@ export interface IKeyConsumer<T, HasDefault extends boolean = boolean> {
   readonly defaultValue: T | undefined;
 }
 
-export interface IKeyProvider<T, HasDefault extends boolean = boolean> {
+export interface TKeyProvider<T, HasDefault extends boolean = boolean> {
   readonly [INTERNAL]: true;
   readonly name: string;
-  readonly consumer: IKeyConsumer<T, HasDefault>;
+  readonly consumer: TKeyConsumer<T, HasDefault>;
   readonly value: T;
 }
 
@@ -25,16 +25,16 @@ export type TArgsBase = readonly any[];
 
 export type TKeyProviderFn<T, HasDefault extends boolean, Args extends TArgsBase> = (
   ...args: Args
-) => IKeyProvider<T, HasDefault>;
+) => TKeyProvider<T, HasDefault>;
 
 // Expose both Provider & Consumer because this way you can expose only one of them
-export interface IKeyBase<T, HasDefault extends boolean, Args extends TArgsBase = [T]> {
-  Consumer: IKeyConsumer<T, HasDefault>;
+export interface TKeyBase<T, HasDefault extends boolean, Args extends TArgsBase = [T]> {
+  Consumer: TKeyConsumer<T, HasDefault>;
   Provider: TKeyProviderFn<T, HasDefault, Args>;
 }
 
-export type TKey<T, HasDefault extends boolean = false> = IKeyBase<T, HasDefault, [value: T]>;
-export type TVoidKey<HasDefault extends boolean = false> = IKeyBase<undefined, HasDefault, []>;
+export type TKey<T, HasDefault extends boolean = false> = TKeyBase<T, HasDefault, [value: T]>;
+export type TVoidKey<HasDefault extends boolean = false> = TKeyBase<undefined, HasDefault, []>;
 
 export const Key = (() => {
   return {
@@ -64,8 +64,8 @@ export const Key = (() => {
     stringify: TStringify<T>,
     hasDefault: HasDefault,
     defaultValue: T | undefined,
-  ): IKeyBase<T, HasDefault, Args> {
-    const Consumer: IKeyConsumer<T, any> = { [INTERNAL]: true, name, hasDefault, defaultValue, stringify };
+  ): TKeyBase<T, HasDefault, Args> {
+    const Consumer: TKeyConsumer<T, any> = { [INTERNAL]: true, name, hasDefault, defaultValue, stringify };
     const Provider = (value: T) => {
       return { [INTERNAL]: true, name, consumer: Consumer, value };
     };

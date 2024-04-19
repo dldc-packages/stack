@@ -1,10 +1,10 @@
 export { Key } from './Key';
 export type {
-  IKeyBase,
-  IKeyConsumer,
-  IKeyProvider,
   TArgsBase,
   TKey,
+  TKeyBase,
+  TKeyConsumer,
+  TKeyProvider,
   TKeyProviderFn,
   TStringify,
   TVoidKey,
