@@ -9,7 +9,7 @@ export type {
   TStringify,
   TVoidKey,
 } from './Key';
-export { MissingContextError } from './MissingContextError';
 export { Stack } from './Stack';
 export { StackCore } from './StackCore';
 export type { TStackCoreTuple, TStackCoreValue } from './StackCore';
+export { MissingContextErreur } from './erreur';

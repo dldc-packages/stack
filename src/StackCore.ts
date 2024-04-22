@@ -1,6 +1,6 @@
 import type { TKeyConsumer, TKeyProvider } from './Key';
-import { MissingContextError } from './MissingContextError';
 import { DEBUG, NODE_INSPECT, PARENT, PROVIDER } from './constants';
+import { throwMissingContextErreur } from './erreur';
 import { indent } from './indent';
 
 export type TStackCoreTuple = [parent: StackCore, provider: TKeyProvider<any>];
@@ -8,8 +8,6 @@ export type TStackCoreTuple = [parent: StackCore, provider: TKeyProvider<any>];
 export type TStackCoreValue = StackCore | null;
 
 export class StackCore {
-  static readonly MissingContextError = MissingContextError;
-
   private readonly [PARENT]!: TStackCoreValue; // Null if root
   private readonly [PROVIDER]!: TKeyProvider<any>;
 
@@ -126,7 +124,7 @@ export class StackCore {
       if (consumer.hasDefault) {
         return consumer.defaultValue as any;
       }
-      throw new MissingContextError(consumer);
+      return throwMissingContextErreur(consumer);
     }
     return res.value;
   }
