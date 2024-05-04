@@ -1,4 +1,4 @@
-import { INTERNAL } from './constants';
+import { INTERNAL } from "./constants.ts";
 
 /**
  * A function that stringify a value.
@@ -21,85 +21,121 @@ export interface TKeyProvider<T, HasDefault extends boolean = boolean> {
   readonly value: T;
 }
 
-export type TArgsBase = readonly any[];
+export type TArgsBase = readonly unknown[];
 
-export type TKeyProviderFn<T, HasDefault extends boolean, Args extends TArgsBase> = (
+export type TKeyProviderFn<
+  T,
+  HasDefault extends boolean,
+  Args extends TArgsBase,
+> = (
   ...args: Args
 ) => TKeyProvider<T, HasDefault>;
 
 // Expose both Provider & Consumer because this way you can expose only one of them
-export interface TKeyBase<T, HasDefault extends boolean, Args extends TArgsBase = [T]> {
+export interface TKeyBase<
+  T,
+  HasDefault extends boolean,
+  Args extends TArgsBase = [T],
+> {
   Consumer: TKeyConsumer<T, HasDefault>;
   Provider: TKeyProviderFn<T, HasDefault, Args>;
 }
 
-export type TKey<T, HasDefault extends boolean = false> = TKeyBase<T, HasDefault, [value: T]>;
-export type TVoidKey<HasDefault extends boolean = false> = TKeyBase<undefined, HasDefault, []>;
+export type TKey<T, HasDefault extends boolean = false> = TKeyBase<
+  T,
+  HasDefault,
+  [value: T]
+>;
+export type TVoidKey<HasDefault extends boolean = false> = TKeyBase<
+  undefined,
+  HasDefault,
+  []
+>;
 
-export const Key = (() => {
-  return {
-    create,
-    createWithDefault,
-    createEmpty,
+export function createKey<T>(
+  name: string,
+  stringify: TStringify<T> = strigifyUnknow,
+): TKey<T, false> {
+  return createInternal<T, false, [value: T]>(
+    name,
+    stringify,
+    false,
+    undefined,
+  );
+}
+
+export function createKeyWithDefault<T>(
+  name: string,
+  defaultValue: T,
+  stringify: TStringify<T> = strigifyUnknow,
+): TKey<T, true> {
+  return createInternal<T, true, [value: T]>(
+    name,
+    stringify,
+    true,
+    defaultValue,
+  );
+}
+
+export function createEmptyKey(name: string): TVoidKey<false> {
+  return createInternal<undefined, false, []>(
+    name,
+    strigifyEmpty,
+    false,
+    undefined,
+  );
+}
+
+function createInternal<
+  T,
+  HasDefault extends boolean,
+  Args extends TArgsBase,
+>(
+  name: string,
+  stringify: TStringify<T>,
+  hasDefault: HasDefault,
+  defaultValue: T | undefined,
+): TKeyBase<T, HasDefault, Args> {
+  const Consumer: TKeyConsumer<T, HasDefault> = {
+    [INTERNAL]: true,
+    name,
+    hasDefault,
+    defaultValue,
+    stringify,
   };
+  const Provider = (value: T) => {
+    return { [INTERNAL]: true, name, consumer: Consumer, value };
+  };
+  return {
+    Consumer,
+    Provider: Provider as unknown as TKeyProviderFn<T, HasDefault, Args>,
+  };
+}
 
-  function create<T>(name: string, stringify: TStringify<T> = strigifyUnknow): TKey<T, false> {
-    return createInternal<T, false, [value: T]>(name, stringify, false, undefined);
+function strigifyUnknow(value: unknown): string {
+  if (value === null) {
+    return "null";
   }
+  if (value === undefined) {
+    return "undefined";
+  }
+  if (typeof value === "string") {
+    return `"${value}"`;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return `${value}`;
+  }
+  if (typeof value === "symbol") {
+    return `Symbol(${value.description})`;
+  }
+  try {
+    const val = JSON.stringify(value);
+    return val.length > 60 ? `${val.slice(0, 60 - 3)}...` : val;
+  } catch (_error) {
+    return `[NOT SERIALIZABLE]`;
+  }
+}
 
-  function createWithDefault<T>(
-    name: string,
-    defaultValue: T,
-    stringify: TStringify<T> = strigifyUnknow,
-  ): TKey<T, true> {
-    return createInternal<T, true, [value: T]>(name, stringify, true, defaultValue);
-  }
-
-  function createEmpty(name: string): TVoidKey<false> {
-    return createInternal<undefined, false, []>(name, strigifyEmpty, false, undefined);
-  }
-
-  function createInternal<T, HasDefault extends boolean, Args extends TArgsBase>(
-    name: string,
-    stringify: TStringify<T>,
-    hasDefault: HasDefault,
-    defaultValue: T | undefined,
-  ): TKeyBase<T, HasDefault, Args> {
-    const Consumer: TKeyConsumer<T, any> = { [INTERNAL]: true, name, hasDefault, defaultValue, stringify };
-    const Provider = (value: T) => {
-      return { [INTERNAL]: true, name, consumer: Consumer, value };
-    };
-    return {
-      Consumer,
-      Provider: Provider as unknown as TKeyProviderFn<T, HasDefault, Args>,
-    };
-  }
-
-  function strigifyUnknow(value: unknown): string {
-    if (value === null) {
-      return 'null';
-    }
-    if (value === undefined) {
-      return 'undefined';
-    }
-    if (typeof value === 'string') {
-      return `"${value}"`;
-    }
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return `${value}`;
-    }
-    if (typeof value === 'symbol') {
-      return `Symbol(${value.description})`;
-    }
-    try {
-      const val = JSON.stringify(value);
-      return val.length > 60 ? `${val.slice(0, 60 - 3)}...` : val;
-    } catch (error) {
-      return `[NOT SERIALIZABLE]`;
-    }
-  }
-
-  function strigifyEmpty() {
-    return '[VOID]';
-  }
-})();
+function strigifyEmpty() {
+  return "[VOID]";
+}

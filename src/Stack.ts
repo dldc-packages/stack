@@ -1,8 +1,10 @@
-import type { TKeyConsumer, TKeyProvider } from './Key';
-import type { TStackCoreValue } from './StackCore';
-import { StackCore } from './StackCore';
-import { INTERNAL, NODE_INSPECT } from './constants';
-import { indent } from './indent';
+// deno-lint-ignore-file no-explicit-any
+
+import type { TKeyConsumer, TKeyProvider } from "./Key.ts";
+import type { TStackCoreValue } from "./StackCore.ts";
+import { StackCore } from "./StackCore.ts";
+import { INTERNAL, NODE_INSPECT } from "./constants.ts";
+import { indent } from "./indent.ts";
 
 export class Stack {
   private readonly [INTERNAL]!: TStackCoreValue;
@@ -18,7 +20,7 @@ export class Stack {
     });
   }
 
-  public has(consumer: TKeyConsumer<any, any>): boolean {
+  public has(consumer: TKeyConsumer<any, boolean>): boolean {
     return StackCore.has(this[INTERNAL], consumer);
   }
 
@@ -36,29 +38,31 @@ export class Stack {
     return StackCore.getOrFail(this[INTERNAL], consumer);
   }
 
-  public inspect() {
+  public inspect(): string {
     const internal = this[INTERNAL];
     const details = StackCore.inspect(internal);
     if (details === null) {
       return `Stack {}`;
     }
-    return [`Stack {`, '  ' + indent(details), `}`].join('\n');
+    return [`Stack {`, "  " + indent(details), `}`].join("\n");
   }
 
-  public toString() {
+  public toString(): string {
     return `Stack { ... }`;
   }
 
-  public debug(): Array<{ value: any; ctxId: string }> {
+  public debug(): Array<{ value: unknown; ctxId: string }> {
     return StackCore.debug(this[INTERNAL]);
   }
 
   protected instantiate(stackCore: TStackCoreValue): this {
     // make sure we are instantiating the same class
     if (this.constructor !== Stack) {
-      throw new Error('Cannot instantiate a Stack subclass, you need to override instantiate()');
+      throw new Error(
+        "Cannot instantiate a Stack subclass, you need to override instantiate()",
+      );
     }
-    return new Stack(stackCore) as any;
+    return new Stack(stackCore) as this;
   }
 
   public with(...keys: Array<TKeyProvider<any>>): this {

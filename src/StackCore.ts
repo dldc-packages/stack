@@ -1,7 +1,9 @@
-import type { TKeyConsumer, TKeyProvider } from './Key';
-import { DEBUG, NODE_INSPECT, PARENT, PROVIDER } from './constants';
-import { throwMissingContextErreur } from './erreur';
-import { indent } from './indent';
+// deno-lint-ignore-file no-explicit-any
+
+import type { TKeyConsumer, TKeyProvider } from "./Key.ts";
+import { DEBUG, NODE_INSPECT, PARENT, PROVIDER } from "./constants.ts";
+import { throwMissingContextErreur } from "./erreur.ts";
+import { indent } from "./indent.ts";
 
 export type TStackCoreTuple = [parent: StackCore, provider: TKeyProvider<any>];
 
@@ -11,7 +13,10 @@ export class StackCore {
   private readonly [PARENT]!: TStackCoreValue; // Null if root
   private readonly [PROVIDER]!: TKeyProvider<any>;
 
-  protected constructor(provider: TKeyProvider<any>, parent: TStackCoreValue = null) {
+  protected constructor(
+    provider: TKeyProvider<any>,
+    parent: TStackCoreValue = null,
+  ) {
     Object.defineProperty(this, PARENT, {
       enumerable: false,
       writable: false,
@@ -27,26 +32,29 @@ export class StackCore {
     });
   }
 
-  public toString() {
+  public toString(): string {
     return `StackCore { ... }`;
   }
 
   /**
    * Print a the StackCore with all the providers.
    */
-  public inspect() {
+  public inspect(): string {
     const details = StackCore.inspect(this);
     if (details === null) {
       return `StackCore {}`;
     }
-    return [`StackCore {`, '  ' + indent(details), `}`].join('\n');
+    return [`StackCore {`, "  " + indent(details), `}`].join("\n");
   }
 
   /**
    * READ Functions
    */
 
-  static findFirstMatch(stack: TStackCoreValue, consumer: TKeyConsumer<any, any>): { found: boolean; value: any } {
+  static findFirstMatch(
+    stack: TStackCoreValue,
+    consumer: TKeyConsumer<any, any>,
+  ): { found: boolean; value: any } {
     if (stack === null) {
       return { found: false, value: null };
     }
@@ -60,7 +68,10 @@ export class StackCore {
     return StackCore.findFirstMatch(stack[PARENT], consumer);
   }
 
-  static has(stack: TStackCoreValue, consumer: TKeyConsumer<any, any>): boolean {
+  static has(
+    stack: TStackCoreValue,
+    consumer: TKeyConsumer<any, any>,
+  ): boolean {
     return StackCore.findFirstMatch(stack, consumer).found;
   }
 
@@ -87,19 +98,26 @@ export class StackCore {
     }
     const details: string[] = [];
     for (const [, provider] of StackCore.extract(stack)) {
-      details.unshift(`${provider.consumer.name}: ${provider.consumer.stringify(provider.value)}`);
+      details.unshift(
+        `${provider.consumer.name}: ${
+          provider.consumer.stringify(provider.value)
+        }`,
+      );
     }
     if (details.length === 0) {
       return null;
     }
-    const allDetails = details.join(', ');
+    const allDetails = details.join(", ");
     if (allDetails.length < 60) {
       return allDetails;
     }
-    return details.join('\n');
+    return details.join("\n");
   }
 
-  static getAll<T>(stack: TStackCoreValue, consumer: TKeyConsumer<T>): IterableIterator<T> {
+  static getAll<T>(
+    stack: TStackCoreValue,
+    consumer: TKeyConsumer<T>,
+  ): IterableIterator<T> {
     let current: TStackCoreValue = stack;
     return {
       next(): IteratorResult<T> {
@@ -151,7 +169,10 @@ export class StackCore {
    * WRITE Functions
    */
 
-  static with(stack: TStackCoreValue, ...keys: readonly TKeyProvider<any>[]): TStackCoreValue {
+  static with(
+    stack: TStackCoreValue,
+    ...keys: readonly TKeyProvider<any>[]
+  ): TStackCoreValue {
     if (keys.length === 0) {
       return stack;
     }
@@ -170,7 +191,10 @@ export class StackCore {
     if (left === null || right === null) {
       return left ?? right ?? null;
     }
-    const rightExtracted = Array.from(StackCore.extract(right), ([, provider]) => provider).reverse();
+    const rightExtracted = Array.from(
+      StackCore.extract(right),
+      ([, provider]) => provider,
+    ).reverse();
     return StackCore.with(left, ...rightExtracted);
   }
 
@@ -207,7 +231,8 @@ export class StackCore {
 
   static debug(stack: TStackCoreValue): Array<{ value: any; ctxId: string }> {
     const world: any = globalThis;
-    const idMap = (world[DEBUG] as WeakMap<any, string>) || (world[DEBUG] = new WeakMap<any, string>());
+    const idMap = (world[DEBUG] as WeakMap<any, string>) ||
+      (world[DEBUG] = new WeakMap<any, string>());
     const result: Array<{ value: any; ctxName: string; ctxId: string }> = [];
     traverse(stack);
     return result;
