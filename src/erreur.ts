@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 
-import { createErreurStore, type TErreurStore } from "jsr:@dldc/erreur";
+import { createErreurStore, type TErreurStore } from "erreur";
 import type { TKeyConsumer } from "./Key.ts";
 
 const MissingContextErreurInternal: TErreurStore<TKeyConsumer<any, boolean>> =
