@@ -2,7 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@dldc/erreur@7.1.1": "jsr:@dldc/erreur@7.1.1"
+      "jsr:@dldc/erreur@^7.1.1": "jsr:@dldc/erreur@7.1.1"
     },
     "jsr": {
       "@dldc/erreur@7.1.1": {
@@ -48,7 +48,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@dldc/erreur@7.1.1"
+      "jsr:@dldc/erreur@^7.1.1"
     ]
   }
 }
