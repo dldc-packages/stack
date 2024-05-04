@@ -6,6 +6,9 @@ import { StackCore } from "./StackCore.ts";
 import { INTERNAL, NODE_INSPECT } from "./constants.ts";
 import { indent } from "./indent.ts";
 
+/**
+ * This is the main class that you will use to interact with the stack.
+ */
 export class Stack {
   private readonly [INTERNAL]!: TStackCoreValue;
 
