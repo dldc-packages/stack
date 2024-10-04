@@ -91,11 +91,7 @@ Deno.test("Stack.getAll()", () => {
   expect(stack.get(Ctx2.Consumer)).toBe("2.1");
   expect(stack.get(Ctx3.Consumer)).toBe("3");
 
-  expect(Array.from(stack.getAll(Ctx1.Consumer))).toEqual([
-    "1.2",
-    "1.1",
-    "1",
-  ]);
+  expect(Array.from(stack.getAll(Ctx1.Consumer))).toEqual(["1.2", "1.1", "1"]);
 });
 
 Deno.test("Stack.dedupe()", () => {
@@ -128,7 +124,7 @@ Deno.test("Stack.dedupe()", () => {
 Deno.test("Custom Stack", () => {
   class CustomStack extends Stack {
     // You need to override the `instantiate` method to return a new instance of your CustomStack
-    protected instantiate(stackCore: TStackCoreValue): this {
+    protected override instantiate(stackCore: TStackCoreValue): this {
       return new CustomStack(stackCore) as this;
     }
   }
@@ -140,6 +136,9 @@ Deno.test("Custom Stack", () => {
   const next = custom.with(Ctx.Provider("ok"));
   expect(next instanceof CustomStack).toBe(true);
   expect(next instanceof Stack).toBe(true);
+
+  const mapped = custom.map((stack) => stack.with(Ctx.Provider("mapped")));
+  expect(mapped instanceof CustomStack).toBe(true);
 });
 
 Deno.test("Should throw if custom stack does not override instantiate", () => {
@@ -154,14 +153,11 @@ Deno.test("Should throw if custom stack does not override instantiate", () => {
 Deno.test("ParamsStack (with param)", () => {
   class ParamsStack extends Stack {
     // You can pass your own parameters to the constructor
-    constructor(
-      public readonly param: string,
-      data: TStackCoreValue = null,
-    ) {
+    constructor(public readonly param: string, data: TStackCoreValue = null) {
       super(data);
     }
 
-    protected instantiate(core: TStackCoreValue): this {
+    protected override instantiate(core: TStackCoreValue): this {
       return new ParamsStack(this.param, core) as this;
     }
   }

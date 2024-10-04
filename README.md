@@ -150,7 +150,7 @@ methods.
 ```ts
 class CustomStack extends Stack {
   // You need to override the `instantiate` method to return a new instance of your CustomStack
-  protected instantiate(stackCore: StackCoreValue): this {
+  protected override instantiate(stackCore: StackCoreValue): this {
     return new CustomStack(stackCore) as any;
   }
 }

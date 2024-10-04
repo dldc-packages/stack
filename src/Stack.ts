@@ -76,6 +76,10 @@ export class Stack {
     return this.instantiate(nextCore);
   }
 
+  public map<Out extends this>(callbackfn: (input: this) => Out): Out {
+    return callbackfn(this);
+  }
+
   public merge(other: Stack): this {
     if (other === this) {
       return this;
