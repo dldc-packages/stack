@@ -1,0 +1,17 @@
+{
+  "name": "@dldc/stack",
+  "version": "6.1.0",
+  "exports": "./mod.ts",
+  "imports": {
+    "@dldc/erreur": "jsr:@dldc/erreur@^7.1.1",
+    "@std/expect": "jsr:@std/expect@^1.0.13"
+  },
+  "tasks": {
+    "test:run": "deno test -A",
+    "test:watch": "deno test --watch",
+    "test:coverage": "deno test -A --coverage && deno coverage coverage --html",
+    "bump": "deno run -A jsr:@mys/bump@1",
+    "check-deps": "deno run -A jsr:@check/deps",
+    "check": "deno fmt --check . && deno lint . && deno task test:run"
+  }
+}

@@ -1,11 +1,13 @@
-import { expect } from "$std/expect/mod.ts";
+import { expect } from "@std/expect";
 import {
   createEmptyKey,
   createKey,
   createKeyWithDefault,
+  MissingContextErreur,
   Stack,
   type TStackCoreValue,
 } from "../mod.ts";
+import { InvalidStackSubClassErreur } from "../src/erreur.ts";
 
 Deno.test("Gist", () => {
   // 1. Create a key with a name and a type
@@ -34,7 +36,7 @@ Deno.test("Context with 0 should return self", () => {
 Deno.test("Context with default", () => {
   const CtxWithDefault = createKeyWithDefault<string>(
     "CtxWithDefault",
-    "DEFAULT",
+    "DEFAULT"
   );
   const emptyCtx = new Stack();
   expect(emptyCtx.get(CtxWithDefault.Consumer)).toBe("DEFAULT");
@@ -54,8 +56,10 @@ Deno.test("Context with default", () => {
 Deno.test("Context without default", () => {
   const CtxNoDefault = createKey<string>("CtxNoDefault");
   const emptyCtx = new Stack();
-  expect(emptyCtx.get(CtxNoDefault.Consumer)).toBe(null);
-  expect(() => emptyCtx.getOrFail(CtxNoDefault.Consumer)).toThrow();
+  expect(emptyCtx.get(CtxNoDefault.Consumer)).toBe(undefined);
+  expect(() => emptyCtx.getOrFail(CtxNoDefault.Consumer)).toThrow(
+    "Cannot find context CtxNoDefault"
+  );
   expect(emptyCtx.has(CtxNoDefault.Consumer)).toBe(false);
   const ctx = emptyCtx.with(CtxNoDefault.Provider("A"));
   expect(ctx.get(CtxNoDefault.Consumer)).toBe("A");
@@ -84,7 +88,7 @@ Deno.test("Stack.getAll()", () => {
     Ctx3.Provider("3"),
     Ctx1.Provider("1.1"),
     Ctx2.Provider("2.1"),
-    Ctx1.Provider("1.2"),
+    Ctx1.Provider("1.2")
   );
 
   expect(stack.get(Ctx1.Consumer)).toBe("1.2");
@@ -106,7 +110,7 @@ Deno.test("Stack.dedupe()", () => {
       Ctx3.Provider("3"),
       Ctx1.Provider("1.1"),
       Ctx2.Provider("2.1"),
-      Ctx1.Provider("1.2"),
+      Ctx1.Provider("1.2")
     )
     .dedupe();
 
@@ -114,6 +118,39 @@ Deno.test("Stack.dedupe()", () => {
   expect(stack.get(Ctx2.Consumer)).toBe("2.1");
   expect(stack.get(Ctx3.Consumer)).toBe("3");
   expect(Array.from(stack.getAll(Ctx1.Consumer))).toEqual(["1.2"]);
+
+  expect(stack.dedupe()).toBe(stack);
+
+  const empty = new Stack();
+  expect(empty.dedupe()).toBe(empty);
+});
+
+Deno.test("Stack.dedupe() with RESET", () => {
+  const Ctx1 = createKey<string>("Ctx1");
+  const Ctx2 = createKey<string>("Ctx2");
+  const Ctx3 = createKey<string>("Ctx3");
+
+  const stack = new Stack()
+    .with(
+      Ctx1.Provider("1"),
+      Ctx2.Provider("2"),
+      Ctx3.Provider("3"),
+      Ctx1.Reset,
+      Ctx1.Provider("1.1"),
+      Ctx2.Provider("2.1"),
+      Ctx1.Provider("1.2"),
+      Ctx1.Provider("1.2"),
+      Ctx2.Reset
+    )
+    .dedupe();
+
+  expect(stack.get(Ctx1.Consumer)).toBe("1.2");
+  expect(stack.get(Ctx2.Consumer)).toBe(undefined);
+  expect(stack.has(Ctx2.Consumer)).toBe(false);
+  expect(stack.get(Ctx3.Consumer)).toBe("3");
+  expect(Array.from(stack.getAll(Ctx1.Consumer))).toEqual(["1.2"]);
+  expect(Array.from(stack.getAll(Ctx2.Consumer))).toEqual([]);
+  expect(Array.from(stack.getAll(Ctx3.Consumer))).toEqual(["3"]);
 
   expect(stack.dedupe()).toBe(stack);
 
@@ -210,7 +247,7 @@ Deno.test("Debug stack", () => {
   const ctx = new Stack().with(
     ACtx.Provider("a1"),
     BCtx.Provider("b1"),
-    ACtx.Provider("a2"),
+    ACtx.Provider("a2")
   );
   const debugValue = ctx.debug();
   expect(debugValue).toMatchObject([
@@ -254,11 +291,11 @@ Deno.test("Stack.inspect()", () => {
   const EmptyKey = createEmptyKey("Empty");
   const ctx = new Stack().with(
     MaybeStringKey.Provider(undefined),
-    EmptyKey.Provider(),
+    EmptyKey.Provider()
   );
 
   expect(ctx.inspect()).toBe(
-    `Stack {\n  MaybeString: undefined, Empty: [VOID]\n}`,
+    `Stack {\n  MaybeString: undefined, Empty: [VOID]\n}`
   );
 });
 
@@ -266,17 +303,17 @@ Deno.test("Custom stringify on key", () => {
   const UserKey = createKey<{ name: string; email: string }>("User");
   const UserPrettyKey = createKey<{ name: string; email: string }>(
     "User",
-    (user) => `${user.name} <${user.email}>`,
+    (user) => `${user.name} <${user.email}>`
   );
 
   const ctx = new Stack().with(
     UserKey.Provider({ name: "John", email: "john@example.com" }),
-    UserPrettyKey.Provider({ name: "Jenna", email: "jenna@example.com" }),
+    UserPrettyKey.Provider({ name: "Jenna", email: "jenna@example.com" })
   );
 
   expect(ctx.toString()).toBe("Stack { ... }");
   expect(ctx.inspect()).toBe(
-    `Stack {\n  User: {"name":"John","email":"john@example.com"}\n  User: Jenna <jenna@example.com>\n}`,
+    `Stack {\n  User: {"name":"John","email":"john@example.com"}\n  User: Jenna <jenna@example.com>\n}`
   );
 });
 
@@ -295,7 +332,7 @@ Deno.test("Inspect non serializable value", () => {
   });
   const ctx2 = new Stack().with(CircularPrettyKey.Provider(circularValue));
   expect(ctx2.inspect()).toBe(
-    `Stack {\n  Circular: {"a":1,"b":2,"circular":"[Circular]"}\n}`,
+    `Stack {\n  Circular: {"a":1,"b":2,"circular":"[Circular]"}\n}`
   );
 });
 
@@ -307,9 +344,65 @@ Deno.test("Big object are truncated in inspect", () => {
       secondKey: "some long text",
       thirdKey: "some long text",
       fourthKey: "some long text",
-    }),
+    })
   );
   expect(ctx.inspect()).toBe(
-    `Stack {\n  BigObject: {"firstKey":"some long text","secondKey":"some long text"...\n}`,
+    `Stack {\n  BigObject: {"firstKey":"some long text","secondKey":"some long text"...\n}`
   );
+});
+
+Deno.test("Reset value", () => {
+  const Num = createKey<number>("num");
+  let ctx = new Stack().with(Num.Provider(1));
+  expect(ctx.get(Num.Consumer)).toBe(1);
+  ctx = ctx.with(Num.Provider(2));
+  expect(ctx.get(Num.Consumer)).toBe(2);
+  ctx = ctx.with(Num.Reset);
+  expect(ctx.get(Num.Consumer)).toBe(undefined);
+  expect(ctx.has(Num.Consumer)).toBe(false);
+  const Num2 = createKey<number>("num2");
+  ctx = ctx.with(Num2.Reset);
+  expect(ctx.get(Num.Consumer)).toBe(undefined);
+  expect(ctx.has(Num.Consumer)).toBe(false);
+  expect(ctx.get(Num2.Consumer)).toBe(undefined);
+  expect(ctx.has(Num2.Consumer)).toBe(false);
+  ctx = ctx.with(Num.Provider(3));
+  expect(ctx.has(Num2.Consumer)).toBe(false);
+});
+
+Deno.test("Incorrect extends of Stack should throw", () => {
+  class IncorrectStack extends Stack {}
+  const Key = createKey<string>("Key");
+  expect(() => new IncorrectStack().with(Key.Provider("hey"))).toThrow(
+    `Cannot instantiate a Stack subclass, you need to override instantiate()`
+  );
+
+  let error;
+  try {
+    new IncorrectStack().with(Key.Provider("hey"));
+  } catch (e) {
+    error = e;
+  }
+  expect(InvalidStackSubClassErreur.has(error)).toBe(true);
+  const errorInfos = InvalidStackSubClassErreur.get(error)!;
+  expect(errorInfos.constructor).toBeDefined();
+  expect(errorInfos.constructor.name).toBe("IncorrectStack");
+  expect(error).toBeInstanceOf(Error);
+});
+
+Deno.test("MissingContextErreur", () => {
+  const Key = createKey<string>("Key");
+  let error!: Error;
+  try {
+    new Stack().getOrFail(Key.Consumer);
+  } catch (e) {
+    error = e as Error;
+  }
+  expect(error).toBeInstanceOf(Error);
+  expect(error.message).toBe("Cannot find context Key");
+  expect(MissingContextErreur.has(error)).toBe(true);
+  const errorInfos = MissingContextErreur.get(error)!;
+  expect(errorInfos.consumer).toBeDefined();
+  expect(errorInfos.stack).toBeDefined();
+  expect(errorInfos.consumer.name).toBe("Key");
 });
