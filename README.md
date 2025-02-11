@@ -6,10 +6,10 @@
 ## Example
 
 ```ts
-import { Key, Stack } from "@dldc/stack";
+import { createKey, Stack } from "@dldc/stack";
 
 // 1. Create a key with a name and a type
-const NumKey = Key.create<number>("Num");
+const NumKey = createKey<number>("Num");
 
 // 2. Create a stack
 const stack = new Stack();
@@ -24,9 +24,7 @@ expect(stack2.get(NumKey.Consumer)).toBe(42);
 ## Installation
 
 ```bash
-npm install @dldc/stack
-# or
-yarn add @dldc/stack
+deno add jsr:@dldc/stack
 ```
 
 ## Usage
@@ -36,24 +34,28 @@ yarn add @dldc/stack
 To write a value to a stack, you need to create a `Key` with a name and a type.
 
 ```ts
-const NumKey = Key.create<number>("Num");
+const NumKey = createKey<number>("Num");
 ```
 
-A key is a object with two properties:
+A key is a object with three properties:
 
 - `Provider`: a function used to write a value to a stack
 - `Consumer`: an object used to read a value from a stack
+- `Reset`: an object used to reset a value from a stack
 
 You can also create an empty key that will not have a value:
 
 ```ts
-const EmptyKey = Key.createEmpty("Empty");
+const EmptyKey = createEmptyKey("Empty");
 ```
+
+Note: `get()` will always return `undefined` for an empty key, use `has()` to
+check if the key is defined.
 
 Finally you ca define a default value for a key:
 
 ```ts
-const NumKey = Key.createWithDefault<number>("Num", 42);
+const NumKey = createKeyWithDefault<number>("Num", 42);
 ```
 
 This key will always return a value if you try to get it from a stack (either
@@ -67,7 +69,8 @@ To create a new empty stack you can instantiate a new `Stack`:
 const stack = new Stack();
 ```
 
-_Note_: Do not pass any argument to the constructor !
+_Note_: The Stack constructor accept one argument, but you should NEVER use it
+as it is an internal implementation detail !
 
 ### Writing to a `Stack`
 
@@ -80,9 +83,6 @@ const stack2 = stack.with(NumKey.Provider(42));
 
 The `with()` method will return a new instance of `Stack` with the new value.
 The original `stack` is not modified.
-
-_Note_: You cannot remove a value from a stack, you can only override it with a
-new value.
 
 You can pass multiple providers to the `with()` method:
 
@@ -100,7 +100,7 @@ const value = stack.get(NumKey.Consumer);
 ```
 
 This will return the value that was set using the `Provider` of the key or
-`undefined` if no value was setand the key does not have a default value.
+`undefined` if no value was set and the key does not have a default value.
 
 If you expect the Key to be defined you can use the `getOrFail()` method:
 
@@ -108,8 +108,8 @@ If you expect the Key to be defined you can use the `getOrFail()` method:
 const value = stack.getOrFail(NumKey.Consumer);
 ```
 
-If the key does not have a default value and no value was set, this will throw a
-`MissingContextError` error.
+If the key does not have a default value and no value was set, this will throw
+an error.
 
 If you only want to know if a value was set, you can use the `has()` method:
 
@@ -118,6 +118,24 @@ const hasValue = stack.has(NumKey.Consumer);
 ```
 
 This will return `true` if a value was set using the `Provider`.
+
+### Resetting a `Stack`
+
+To reset a value from a stack, you need to use the `Reset` of a key and pass it
+to the `with()` method of your `Stack` instance.
+
+```ts
+const stack2 = stack.with(NumKey.Reset);
+```
+
+This will return a new instance of `Stack` with the value removed. The original
+`stack` is not modified.
+
+Calling `has()` on a key that was reset will return `false`.
+
+_Note_: The stack will still hold a reference to the previous values, so don't
+rely on `Reset` for garbage collection. If you really need to, you can call
+`.dedupe()` on the stack to remove all the references to the previous values.
 
 ### Debugging a `Stack`
 
@@ -130,17 +148,21 @@ want to inspect the content of a stack, you need to use the `inspect()` method.
 #### Customizing the `inspect()` method
 
 By default the `inspect()` method will print a serialized version of the values
-contained in the stack. You can customize this behavior by provising a
-`serailize` function as the last argument of `Key.create()`, `Key.createEmpty()`
-or `Key.createWithDefault()`.
+contained in the stack. You can customize this behavior by providing a
+`serialize` function as the last argument of `createKey()` or
+`createKeyWithDefault()`.
 
 ```ts
-const NumKey = Key.create<number>("Num", (value) => value.toFixed(2));
+const NumKey = createKey<number>("Num", (value) => value.toFixed(2));
 
 const stack = new Stack().with(NumKey.Provider(42));
 console.log(stack.inspect());
 // Stack { Num: 42.00 }
 ```
+
+### Handling errors
+
+This library uses [@dldc/erreur](https://jsr.io/@dldc/erreur) to handle errors.
 
 ## Extending `Stack` (advanced)
 
