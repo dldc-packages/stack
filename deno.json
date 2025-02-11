@@ -1,6 +1,6 @@
 {
   "name": "@dldc/stack",
-  "version": "6.1.0",
+  "version": "7.0.0",
   "exports": "./mod.ts",
   "imports": {
     "@dldc/erreur": "jsr:@dldc/erreur@^7.1.1",
