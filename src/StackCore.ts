@@ -1,8 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
 
 import type { TKeyConsumer, TKeyProvider } from "./Key.ts";
-import { DEBUG, NODE_INSPECT, PARENT, PROVIDER } from "./constants.ts";
-import { throwMissingContextErreur } from "./erreur.ts";
+import { DEBUG, NODE_INSPECT, PARENT, PROVIDER, RESET } from "./constants.ts";
+import { createMissingContextErreur } from "./erreur.ts";
 import { indent } from "./indent.ts";
 
 export type TStackCoreTuple = [parent: StackCore, provider: TKeyProvider<any>];
@@ -15,7 +15,7 @@ export class StackCore {
 
   protected constructor(
     provider: TKeyProvider<any>,
-    parent: TStackCoreValue = null,
+    parent: TStackCoreValue = null
   ) {
     Object.defineProperty(this, PARENT, {
       enumerable: false,
@@ -53,38 +53,51 @@ export class StackCore {
 
   static findFirstMatch(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<any, any>,
+    consumer: TKeyConsumer<any, any>
   ): { found: boolean; value: any } {
     if (stack === null) {
       return { found: false, value: null };
     }
     const provider = stack[PROVIDER];
     if (provider.consumer === consumer) {
-      return {
-        found: true,
-        value: provider.value,
-      };
+      if (provider.value === RESET) {
+        return { found: false, value: null };
+      }
+      return { found: true, value: provider.value };
     }
     return StackCore.findFirstMatch(stack[PARENT], consumer);
   }
 
+  /**
+   * Return true if the stack has a value for the given consumer.
+   * If the last value is RESET, it will return false.
+   * @param stack
+   * @param consumer
+   * @returns
+   */
   static has(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<any, any>,
+    consumer: TKeyConsumer<any, any>
   ): boolean {
     return StackCore.findFirstMatch(stack, consumer).found;
   }
 
+  /**
+   * Get the value for a given consumer.
+   * @param stack
+   * @param consumer
+   * @returns
+   */
   static get<T, HasDefault extends boolean>(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<T, HasDefault>,
-  ): HasDefault extends true ? T : T | null {
+    consumer: TKeyConsumer<T, HasDefault>
+  ): HasDefault extends true ? T : T | undefined {
     const res = StackCore.findFirstMatch(stack, consumer);
     if (res.found === false) {
       if (consumer.hasDefault) {
         return consumer.defaultValue as any;
       }
-      return null as any;
+      return undefined as any;
     }
     return res.value;
   }
@@ -100,8 +113,10 @@ export class StackCore {
     for (const [, provider] of StackCore.extract(stack)) {
       details.unshift(
         `${provider.consumer.name}: ${
-          provider.consumer.stringify(provider.value)
-        }`,
+          provider.value === RESET
+            ? "RESET"
+            : provider.consumer.stringify(provider.value)
+        }`
       );
     }
     if (details.length === 0) {
@@ -114,9 +129,14 @@ export class StackCore {
     return details.join("\n");
   }
 
+  /**
+   * Get all the values for a given consumer as an iterator.
+   * The values are returned in the reverse order they were set (First In Last Out).
+   * The iterator will stop when it reaches the end of the stack or when it finds a RESET value.
+   */
   static getAll<T>(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<T>,
+    consumer: TKeyConsumer<T>
   ): IterableIterator<T> {
     let current: TStackCoreValue = stack;
     return {
@@ -125,6 +145,10 @@ export class StackCore {
           const provider = current[PROVIDER];
           current = current[PARENT];
           if (provider.consumer === consumer) {
+            if (provider.value === RESET) {
+              current = null;
+              return { value: undefined, done: true };
+            }
             return { value: provider.value, done: false };
           }
         }
@@ -142,7 +166,7 @@ export class StackCore {
       if (consumer.hasDefault) {
         return consumer.defaultValue as any;
       }
-      return throwMissingContextErreur(consumer);
+      throw createMissingContextErreur(stack, consumer);
     }
     return res.value;
   }
@@ -193,7 +217,7 @@ export class StackCore {
     }
     const rightExtracted = Array.from(
       StackCore.extract(right),
-      ([, provider]) => provider,
+      ([, provider]) => provider
     ).reverse();
     return StackCore.with(left, ...rightExtracted);
   }
@@ -218,7 +242,10 @@ export class StackCore {
         continue;
       }
       seenKeys.add(provider.consumer);
-      baseQueue.push(provider);
+      // If the value is RESET, no need to add it to the queue
+      if (provider.value !== RESET) {
+        baseQueue.push(provider);
+      }
     }
     if (base === stack) {
       // no duplicates
@@ -231,7 +258,8 @@ export class StackCore {
 
   static debug(stack: TStackCoreValue): Array<{ value: any; ctxId: string }> {
     const world: any = globalThis;
-    const idMap = (world[DEBUG] as WeakMap<any, string>) ||
+    const idMap =
+      (world[DEBUG] as WeakMap<any, string>) ||
       (world[DEBUG] = new WeakMap<any, string>());
     const result: Array<{ value: any; ctxName: string; ctxId: string }> = [];
     traverse(stack);

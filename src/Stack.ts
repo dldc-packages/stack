@@ -4,6 +4,7 @@ import type { TKeyConsumer, TKeyProvider } from "./Key.ts";
 import type { TStackCoreValue } from "./StackCore.ts";
 import { StackCore } from "./StackCore.ts";
 import { INTERNAL, NODE_INSPECT } from "./constants.ts";
+import { createInvalidStackSubClassErreur } from "./erreur.ts";
 import { indent } from "./indent.ts";
 
 /**
@@ -28,8 +29,8 @@ export class Stack {
   }
 
   public get<T, HasDefault extends boolean>(
-    consumer: TKeyConsumer<T, HasDefault>,
-  ): HasDefault extends true ? T : T | null {
+    consumer: TKeyConsumer<T, HasDefault>
+  ): HasDefault extends true ? T : T | undefined {
     return StackCore.get(this[INTERNAL], consumer);
   }
 
@@ -61,9 +62,7 @@ export class Stack {
   protected instantiate(stackCore: TStackCoreValue): this {
     // make sure we are instantiating the same class
     if (this.constructor !== Stack) {
-      throw new Error(
-        "Cannot instantiate a Stack subclass, you need to override instantiate()",
-      );
+      throw createInvalidStackSubClassErreur(this.constructor);
     }
     return new Stack(stackCore) as this;
   }
