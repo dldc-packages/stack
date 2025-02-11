@@ -36,7 +36,7 @@ Deno.test("Context with 0 should return self", () => {
 Deno.test("Context with default", () => {
   const CtxWithDefault = createKeyWithDefault<string>(
     "CtxWithDefault",
-    "DEFAULT"
+    "DEFAULT",
   );
   const emptyCtx = new Stack();
   expect(emptyCtx.get(CtxWithDefault.Consumer)).toBe("DEFAULT");
@@ -58,7 +58,7 @@ Deno.test("Context without default", () => {
   const emptyCtx = new Stack();
   expect(emptyCtx.get(CtxNoDefault.Consumer)).toBe(undefined);
   expect(() => emptyCtx.getOrFail(CtxNoDefault.Consumer)).toThrow(
-    "Cannot find context CtxNoDefault"
+    "Cannot find context CtxNoDefault",
   );
   expect(emptyCtx.has(CtxNoDefault.Consumer)).toBe(false);
   const ctx = emptyCtx.with(CtxNoDefault.Provider("A"));
@@ -88,7 +88,7 @@ Deno.test("Stack.getAll()", () => {
     Ctx3.Provider("3"),
     Ctx1.Provider("1.1"),
     Ctx2.Provider("2.1"),
-    Ctx1.Provider("1.2")
+    Ctx1.Provider("1.2"),
   );
 
   expect(stack.get(Ctx1.Consumer)).toBe("1.2");
@@ -110,7 +110,7 @@ Deno.test("Stack.dedupe()", () => {
       Ctx3.Provider("3"),
       Ctx1.Provider("1.1"),
       Ctx2.Provider("2.1"),
-      Ctx1.Provider("1.2")
+      Ctx1.Provider("1.2"),
     )
     .dedupe();
 
@@ -140,7 +140,7 @@ Deno.test("Stack.dedupe() with RESET", () => {
       Ctx2.Provider("2.1"),
       Ctx1.Provider("1.2"),
       Ctx1.Provider("1.2"),
-      Ctx2.Reset
+      Ctx2.Reset,
     )
     .dedupe();
 
@@ -247,7 +247,7 @@ Deno.test("Debug stack", () => {
   const ctx = new Stack().with(
     ACtx.Provider("a1"),
     BCtx.Provider("b1"),
-    ACtx.Provider("a2")
+    ACtx.Provider("a2"),
   );
   const debugValue = ctx.debug();
   expect(debugValue).toMatchObject([
@@ -291,11 +291,11 @@ Deno.test("Stack.inspect()", () => {
   const EmptyKey = createEmptyKey("Empty");
   const ctx = new Stack().with(
     MaybeStringKey.Provider(undefined),
-    EmptyKey.Provider()
+    EmptyKey.Provider(),
   );
 
   expect(ctx.inspect()).toBe(
-    `Stack {\n  MaybeString: undefined, Empty: [VOID]\n}`
+    `Stack {\n  MaybeString: undefined, Empty: [VOID]\n}`,
   );
 });
 
@@ -303,17 +303,17 @@ Deno.test("Custom stringify on key", () => {
   const UserKey = createKey<{ name: string; email: string }>("User");
   const UserPrettyKey = createKey<{ name: string; email: string }>(
     "User",
-    (user) => `${user.name} <${user.email}>`
+    (user) => `${user.name} <${user.email}>`,
   );
 
   const ctx = new Stack().with(
     UserKey.Provider({ name: "John", email: "john@example.com" }),
-    UserPrettyKey.Provider({ name: "Jenna", email: "jenna@example.com" })
+    UserPrettyKey.Provider({ name: "Jenna", email: "jenna@example.com" }),
   );
 
   expect(ctx.toString()).toBe("Stack { ... }");
   expect(ctx.inspect()).toBe(
-    `Stack {\n  User: {"name":"John","email":"john@example.com"}\n  User: Jenna <jenna@example.com>\n}`
+    `Stack {\n  User: {"name":"John","email":"john@example.com"}\n  User: Jenna <jenna@example.com>\n}`,
   );
 });
 
@@ -332,7 +332,7 @@ Deno.test("Inspect non serializable value", () => {
   });
   const ctx2 = new Stack().with(CircularPrettyKey.Provider(circularValue));
   expect(ctx2.inspect()).toBe(
-    `Stack {\n  Circular: {"a":1,"b":2,"circular":"[Circular]"}\n}`
+    `Stack {\n  Circular: {"a":1,"b":2,"circular":"[Circular]"}\n}`,
   );
 });
 
@@ -344,10 +344,10 @@ Deno.test("Big object are truncated in inspect", () => {
       secondKey: "some long text",
       thirdKey: "some long text",
       fourthKey: "some long text",
-    })
+    }),
   );
   expect(ctx.inspect()).toBe(
-    `Stack {\n  BigObject: {"firstKey":"some long text","secondKey":"some long text"...\n}`
+    `Stack {\n  BigObject: {"firstKey":"some long text","secondKey":"some long text"...\n}`,
   );
 });
 
@@ -374,7 +374,7 @@ Deno.test("Incorrect extends of Stack should throw", () => {
   class IncorrectStack extends Stack {}
   const Key = createKey<string>("Key");
   expect(() => new IncorrectStack().with(Key.Provider("hey"))).toThrow(
-    `Cannot instantiate a Stack subclass, you need to override instantiate()`
+    `Cannot instantiate a Stack subclass, you need to override instantiate()`,
   );
 
   let error;

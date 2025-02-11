@@ -15,7 +15,7 @@ export class StackCore {
 
   protected constructor(
     provider: TKeyProvider<any>,
-    parent: TStackCoreValue = null
+    parent: TStackCoreValue = null,
   ) {
     Object.defineProperty(this, PARENT, {
       enumerable: false,
@@ -53,7 +53,7 @@ export class StackCore {
 
   static findFirstMatch(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<any, any>
+    consumer: TKeyConsumer<any, any>,
   ): { found: boolean; value: any } {
     if (stack === null) {
       return { found: false, value: null };
@@ -77,7 +77,7 @@ export class StackCore {
    */
   static has(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<any, any>
+    consumer: TKeyConsumer<any, any>,
   ): boolean {
     return StackCore.findFirstMatch(stack, consumer).found;
   }
@@ -90,7 +90,7 @@ export class StackCore {
    */
   static get<T, HasDefault extends boolean>(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<T, HasDefault>
+    consumer: TKeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | undefined {
     const res = StackCore.findFirstMatch(stack, consumer);
     if (res.found === false) {
@@ -116,7 +116,7 @@ export class StackCore {
           provider.value === RESET
             ? "RESET"
             : provider.consumer.stringify(provider.value)
-        }`
+        }`,
       );
     }
     if (details.length === 0) {
@@ -136,7 +136,7 @@ export class StackCore {
    */
   static getAll<T>(
     stack: TStackCoreValue,
-    consumer: TKeyConsumer<T>
+    consumer: TKeyConsumer<T>,
   ): IterableIterator<T> {
     let current: TStackCoreValue = stack;
     return {
@@ -217,7 +217,7 @@ export class StackCore {
     }
     const rightExtracted = Array.from(
       StackCore.extract(right),
-      ([, provider]) => provider
+      ([, provider]) => provider,
     ).reverse();
     return StackCore.with(left, ...rightExtracted);
   }
@@ -258,8 +258,7 @@ export class StackCore {
 
   static debug(stack: TStackCoreValue): Array<{ value: any; ctxId: string }> {
     const world: any = globalThis;
-    const idMap =
-      (world[DEBUG] as WeakMap<any, string>) ||
+    const idMap = (world[DEBUG] as WeakMap<any, string>) ||
       (world[DEBUG] = new WeakMap<any, string>());
     const result: Array<{ value: any; ctxName: string; ctxId: string }> = [];
     traverse(stack);

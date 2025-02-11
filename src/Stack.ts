@@ -29,7 +29,7 @@ export class Stack {
   }
 
   public get<T, HasDefault extends boolean>(
-    consumer: TKeyConsumer<T, HasDefault>
+    consumer: TKeyConsumer<T, HasDefault>,
   ): HasDefault extends true ? T : T | undefined {
     return StackCore.get(this[INTERNAL], consumer);
   }

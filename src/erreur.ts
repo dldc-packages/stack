@@ -14,11 +14,11 @@ const MissingContextErreurInternal: TErreurStore<MissingContextErreurData> =
 
 export function createMissingContextErreur(
   stack: TStackCoreValue,
-  consumer: TKeyConsumer<any>
+  consumer: TKeyConsumer<any>,
 ) {
   return MissingContextErreurInternal.setAndThrow(
     `Cannot find context ${consumer.name}`,
-    { consumer, stack }
+    { consumer, stack },
   );
 }
 
@@ -28,13 +28,14 @@ export interface InvalidStackSubClassErreurData {
   constructor: Function;
 }
 
-const InvalidStackSubClassErreurInternal: TErreurStore<InvalidStackSubClassErreurData> =
-  createErreurStore();
+const InvalidStackSubClassErreurInternal: TErreurStore<
+  InvalidStackSubClassErreurData
+> = createErreurStore();
 
 export function createInvalidStackSubClassErreur(constructor: Function) {
   return InvalidStackSubClassErreurInternal.setAndThrow(
     "Cannot instantiate a Stack subclass, you need to override instantiate()",
-    { constructor }
+    { constructor },
   );
 }
 

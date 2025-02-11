@@ -44,7 +44,7 @@ export type TArgsBase = readonly unknown[];
 export type TKeyProviderFn<
   T,
   HasDefault extends boolean,
-  Args extends TArgsBase
+  Args extends TArgsBase,
 > = (...args: Args) => TKeyProvider<T, HasDefault>;
 
 /**
@@ -57,7 +57,7 @@ export type TKeyProviderFn<
 export interface TKeyBase<
   T,
   HasDefault extends boolean,
-  Args extends TArgsBase = [T]
+  Args extends TArgsBase = [T],
 > {
   Consumer: TKeyConsumer<T, HasDefault>;
   Provider: TKeyProviderFn<T, HasDefault, Args>;
@@ -96,13 +96,13 @@ export type TVoidKey<HasDefault extends boolean = false> = TKeyBase<
  */
 export function createKey<T>(
   name: string,
-  stringify: TStringify<T> = strigifyUnknow
+  stringify: TStringify<T> = strigifyUnknow,
 ): TKey<T, false> {
   return createInternal<T, false, [value: T]>(
     name,
     stringify,
     false,
-    undefined
+    undefined,
   );
 }
 
@@ -121,13 +121,13 @@ export function createKey<T>(
 export function createKeyWithDefault<T>(
   name: string,
   defaultValue: T,
-  stringify: TStringify<T> = strigifyUnknow
+  stringify: TStringify<T> = strigifyUnknow,
 ): TKey<T, true> {
   return createInternal<T, true, [value: T]>(
     name,
     stringify,
     true,
-    defaultValue
+    defaultValue,
   );
 }
 
@@ -143,7 +143,7 @@ export function createEmptyKey(name: string): TVoidKey<false> {
     name,
     strigifyEmpty,
     false,
-    undefined
+    undefined,
   );
 }
 
@@ -151,7 +151,7 @@ function createInternal<T, HasDefault extends boolean, Args extends TArgsBase>(
   name: string,
   stringify: TStringify<T>,
   hasDefault: HasDefault,
-  defaultValue: T | undefined
+  defaultValue: T | undefined,
 ): TKeyBase<T, HasDefault, Args> {
   const Consumer: TKeyConsumer<T, HasDefault> = {
     [INTERNAL]: true,
