@@ -13,10 +13,7 @@ export class StackCore {
   private readonly [PARENT]!: TStackCoreValue; // Null if root
   private readonly [PROVIDER]!: TKeyProvider<any>;
 
-  protected constructor(
-    provider: TKeyProvider<any>,
-    parent: TStackCoreValue = null,
-  ) {
+  protected constructor(provider: TKeyProvider<any>, parent: TStackCoreValue = null) {
     Object.defineProperty(this, PARENT, {
       enumerable: false,
       writable: false,
@@ -75,10 +72,7 @@ export class StackCore {
    * @param consumer
    * @returns
    */
-  static has(
-    stack: TStackCoreValue,
-    consumer: TKeyConsumer<any, any>,
-  ): boolean {
+  static has(stack: TStackCoreValue, consumer: TKeyConsumer<any, any>): boolean {
     return StackCore.findFirstMatch(stack, consumer).found;
   }
 
@@ -113,9 +107,7 @@ export class StackCore {
     for (const [, provider] of StackCore.extract(stack)) {
       details.unshift(
         `${provider.consumer.name}: ${
-          provider.value === RESET
-            ? "RESET"
-            : provider.consumer.stringify(provider.value)
+          provider.value === RESET ? "RESET" : provider.consumer.stringify(provider.value)
         }`,
       );
     }
@@ -134,10 +126,7 @@ export class StackCore {
    * The values are returned in the reverse order they were set (First In Last Out).
    * The iterator will stop when it reaches the end of the stack or when it finds a RESET value.
    */
-  static getAll<T>(
-    stack: TStackCoreValue,
-    consumer: TKeyConsumer<T>,
-  ): IterableIterator<T> {
+  static getAll<T>(stack: TStackCoreValue, consumer: TKeyConsumer<T>): IterableIterator<T> {
     let current: TStackCoreValue = stack;
     return {
       next(): IteratorResult<T> {
@@ -193,10 +182,7 @@ export class StackCore {
    * WRITE Functions
    */
 
-  static with(
-    stack: TStackCoreValue,
-    ...keys: readonly TKeyProvider<any>[]
-  ): TStackCoreValue {
+  static with(stack: TStackCoreValue, ...keys: readonly TKeyProvider<any>[]): TStackCoreValue {
     if (keys.length === 0) {
       return stack;
     }
@@ -258,8 +244,8 @@ export class StackCore {
 
   static debug(stack: TStackCoreValue): Array<{ value: any; ctxId: string }> {
     const world: any = globalThis;
-    const idMap = (world[DEBUG] as WeakMap<any, string>) ||
-      (world[DEBUG] = new WeakMap<any, string>());
+    const idMap =
+      (world[DEBUG] as WeakMap<any, string>) || (world[DEBUG] = new WeakMap<any, string>());
     const result: Array<{ value: any; ctxName: string; ctxId: string }> = [];
     traverse(stack);
     return result;

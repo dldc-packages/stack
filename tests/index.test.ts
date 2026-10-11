@@ -1,4 +1,5 @@
 import { expect } from "@std/expect";
+import { test } from "vite-plus/test";
 import {
   createEmptyKey,
   createKey,
@@ -9,7 +10,7 @@ import {
 } from "../mod.ts";
 import { InvalidStackSubClassErreur } from "../src/erreur.ts";
 
-Deno.test("Gist", () => {
+test("Gist", () => {
   // 1. Create a key with a name and a type
   const NumKey = createKey<number>("Num");
 
@@ -23,21 +24,18 @@ Deno.test("Gist", () => {
   expect(stack2.get(NumKey.Consumer)).toBe(42);
 });
 
-Deno.test("new Stack()", () => {
+test("new Stack()", () => {
   expect(new Stack()).toBeInstanceOf(Stack);
 });
 
-Deno.test("Context with 0 should return self", () => {
+test("Context with 0 should return self", () => {
   const Ctx = createKey<string>("Ctx");
   const ctx = new Stack().with(Ctx.Provider(""));
   expect(ctx.with()).toBe(ctx);
 });
 
-Deno.test("Context with default", () => {
-  const CtxWithDefault = createKeyWithDefault<string>(
-    "CtxWithDefault",
-    "DEFAULT",
-  );
+test("Context with default", () => {
+  const CtxWithDefault = createKeyWithDefault<string>("CtxWithDefault", "DEFAULT");
   const emptyCtx = new Stack();
   expect(emptyCtx.get(CtxWithDefault.Consumer)).toBe("DEFAULT");
   expect(emptyCtx.getOrFail(CtxWithDefault.Consumer)).toBe("DEFAULT");
@@ -53,7 +51,7 @@ Deno.test("Context with default", () => {
   expect(otherCtx.has(CtxWithDefault.Consumer)).toBe(false);
 });
 
-Deno.test("Context without default", () => {
+test("Context without default", () => {
   const CtxNoDefault = createKey<string>("CtxNoDefault");
   const emptyCtx = new Stack();
   expect(emptyCtx.get(CtxNoDefault.Consumer)).toBe(undefined);
@@ -67,7 +65,7 @@ Deno.test("Context without default", () => {
   expect(ctx.has(CtxNoDefault.Consumer)).toBe(true);
 });
 
-Deno.test("Override context", () => {
+test("Override context", () => {
   const Ctx = createKey<string>("Ctx");
   const ctx1 = new Stack().with(Ctx.Provider("A"));
   expect(ctx1.get(Ctx.Consumer)).toBe("A");
@@ -77,7 +75,7 @@ Deno.test("Override context", () => {
   expect(ctx3.get(Ctx.Consumer)).toBe("D");
 });
 
-Deno.test("Stack.getAll()", () => {
+test("Stack.getAll()", () => {
   const Ctx1 = createKey<string>("Ctx1");
   const Ctx2 = createKey<string>("Ctx2");
   const Ctx3 = createKey<string>("Ctx3");
@@ -98,7 +96,7 @@ Deno.test("Stack.getAll()", () => {
   expect(Array.from(stack.getAll(Ctx1.Consumer))).toEqual(["1.2", "1.1", "1"]);
 });
 
-Deno.test("Stack.dedupe()", () => {
+test("Stack.dedupe()", () => {
   const Ctx1 = createKey<string>("Ctx1");
   const Ctx2 = createKey<string>("Ctx2");
   const Ctx3 = createKey<string>("Ctx3");
@@ -125,7 +123,7 @@ Deno.test("Stack.dedupe()", () => {
   expect(empty.dedupe()).toBe(empty);
 });
 
-Deno.test("Stack.dedupe() with RESET", () => {
+test("Stack.dedupe() with RESET", () => {
   const Ctx1 = createKey<string>("Ctx1");
   const Ctx2 = createKey<string>("Ctx2");
   const Ctx3 = createKey<string>("Ctx3");
@@ -158,7 +156,7 @@ Deno.test("Stack.dedupe() with RESET", () => {
   expect(empty.dedupe()).toBe(empty);
 });
 
-Deno.test("Custom Stack", () => {
+test("Custom Stack", () => {
   class CustomStack extends Stack {
     // You need to override the `instantiate` method to return a new instance of your CustomStack
     protected override instantiate(stackCore: TStackCoreValue): this {
@@ -178,7 +176,7 @@ Deno.test("Custom Stack", () => {
   expect(mapped instanceof CustomStack).toBe(true);
 });
 
-Deno.test("Should throw if custom stack does not override instantiate", () => {
+test("Should throw if custom stack does not override instantiate", () => {
   class CustomStack extends Stack {}
 
   const item = new CustomStack();
@@ -187,10 +185,13 @@ Deno.test("Should throw if custom stack does not override instantiate", () => {
   expect(() => item.with(Ctx.Provider("hey"))).toThrow();
 });
 
-Deno.test("ParamsStack (with param)", () => {
+test("ParamsStack (with param)", () => {
   class ParamsStack extends Stack {
     // You can pass your own parameters to the constructor
-    constructor(public readonly param: string, data: TStackCoreValue = null) {
+    constructor(
+      public readonly param: string,
+      data: TStackCoreValue = null,
+    ) {
       super(data);
     }
 
@@ -210,7 +211,7 @@ Deno.test("ParamsStack (with param)", () => {
   expect(next instanceof Stack).toBe(true);
 });
 
-Deno.test("Stack.merge", () => {
+test("Stack.merge", () => {
   const Key1 = createKey<string>("Key1");
   const Key2 = createKey<string>("Key2");
 
@@ -237,18 +238,14 @@ Deno.test("Stack.merge", () => {
   expect(mergeEmpty2).toBe(empty1);
 });
 
-Deno.test("create empty stack", () => {
+test("create empty stack", () => {
   expect(new Stack()).toBeInstanceOf(Stack);
 });
 
-Deno.test("Debug stack", () => {
+test("Debug stack", () => {
   const ACtx = createKeyWithDefault<string>("ACtx", "A");
   const BCtx = createKeyWithDefault<string>("BCtx", "B");
-  const ctx = new Stack().with(
-    ACtx.Provider("a1"),
-    BCtx.Provider("b1"),
-    ACtx.Provider("a2"),
-  );
+  const ctx = new Stack().with(ACtx.Provider("a1"), BCtx.Provider("b1"), ACtx.Provider("a2"));
   const debugValue = ctx.debug();
   expect(debugValue).toMatchObject([
     { value: "a2", ctxName: "ACtx" },
@@ -258,7 +255,7 @@ Deno.test("Debug stack", () => {
   expect(debugValue[0].ctxId).toBe(debugValue[2].ctxId);
 });
 
-Deno.test("Empty Key", () => {
+test("Empty Key", () => {
   const EmptyKey = createEmptyKey("Empty");
 
   const ctx = new Stack().with(EmptyKey.Provider());
@@ -267,7 +264,7 @@ Deno.test("Empty Key", () => {
   expect(ctx.has(EmptyKey.Consumer)).toBe(true);
 });
 
-Deno.test("Undefined value", () => {
+test("Undefined value", () => {
   const MaybeStringKey = createKey<string | undefined>("MaybeString");
 
   const ctx = new Stack().with(MaybeStringKey.Provider(undefined));
@@ -276,30 +273,25 @@ Deno.test("Undefined value", () => {
   expect(ctx.has(MaybeStringKey.Consumer)).toBe(true);
 });
 
-Deno.test("Stack.toString()", () => {
+test("Stack.toString()", () => {
   const MaybeStringKey = createKey<string | undefined>("MaybeString");
   const ctx = new Stack().with(MaybeStringKey.Provider(undefined));
 
   expect(ctx.toString()).toBe("Stack { ... }");
 });
 
-Deno.test("Stack.inspect()", () => {
+test("Stack.inspect()", () => {
   const ctx1 = new Stack();
   expect(ctx1.inspect()).toBe("Stack {}");
 
   const MaybeStringKey = createKey<string | undefined>("MaybeString");
   const EmptyKey = createEmptyKey("Empty");
-  const ctx = new Stack().with(
-    MaybeStringKey.Provider(undefined),
-    EmptyKey.Provider(),
-  );
+  const ctx = new Stack().with(MaybeStringKey.Provider(undefined), EmptyKey.Provider());
 
-  expect(ctx.inspect()).toBe(
-    `Stack {\n  MaybeString: undefined, Empty: [VOID]\n}`,
-  );
+  expect(ctx.inspect()).toBe(`Stack {\n  MaybeString: undefined, Empty: [VOID]\n}`);
 });
 
-Deno.test("Custom stringify on key", () => {
+test("Custom stringify on key", () => {
   const UserKey = createKey<{ name: string; email: string }>("User");
   const UserPrettyKey = createKey<{ name: string; email: string }>(
     "User",
@@ -317,7 +309,7 @@ Deno.test("Custom stringify on key", () => {
   );
 });
 
-Deno.test("Inspect non serializable value", () => {
+test("Inspect non serializable value", () => {
   type TCircular = { a: number; b: number; circular?: TCircular };
 
   const CircularKey = createKey<TCircular>("Circular");
@@ -331,12 +323,10 @@ Deno.test("Inspect non serializable value", () => {
     return JSON.stringify({ a, b, circular: "[Circular]" });
   });
   const ctx2 = new Stack().with(CircularPrettyKey.Provider(circularValue));
-  expect(ctx2.inspect()).toBe(
-    `Stack {\n  Circular: {"a":1,"b":2,"circular":"[Circular]"}\n}`,
-  );
+  expect(ctx2.inspect()).toBe(`Stack {\n  Circular: {"a":1,"b":2,"circular":"[Circular]"}\n}`);
 });
 
-Deno.test("Big object are truncated in inspect", () => {
+test("Big object are truncated in inspect", () => {
   const BigObjectKey = createKey<Record<string, string>>("BigObject");
   const ctx = new Stack().with(
     BigObjectKey.Provider({
@@ -351,7 +341,7 @@ Deno.test("Big object are truncated in inspect", () => {
   );
 });
 
-Deno.test("Reset value", () => {
+test("Reset value", () => {
   const Num = createKey<number>("num");
   let ctx = new Stack().with(Num.Provider(1));
   expect(ctx.get(Num.Consumer)).toBe(1);
@@ -370,7 +360,7 @@ Deno.test("Reset value", () => {
   expect(ctx.has(Num2.Consumer)).toBe(false);
 });
 
-Deno.test("Incorrect extends of Stack should throw", () => {
+test("Incorrect extends of Stack should throw", () => {
   class IncorrectStack extends Stack {}
   const Key = createKey<string>("Key");
   expect(() => new IncorrectStack().with(Key.Provider("hey"))).toThrow(
@@ -390,7 +380,7 @@ Deno.test("Incorrect extends of Stack should throw", () => {
   expect(error).toBeInstanceOf(Error);
 });
 
-Deno.test("MissingContextErreur", () => {
+test("MissingContextErreur", () => {
   const Key = createKey<string>("Key");
   let error!: Error;
   try {

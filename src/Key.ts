@@ -41,11 +41,9 @@ export type TArgsBase = readonly unknown[];
 /**
  * A function that create a TKeyProvider.
  */
-export type TKeyProviderFn<
-  T,
-  HasDefault extends boolean,
-  Args extends TArgsBase,
-> = (...args: Args) => TKeyProvider<T, HasDefault>;
+export type TKeyProviderFn<T, HasDefault extends boolean, Args extends TArgsBase> = (
+  ...args: Args
+) => TKeyProvider<T, HasDefault>;
 
 /**
  * Result of `createKey`, `createKeyWithDefault` and `createEmptyKey`.
@@ -54,11 +52,7 @@ export type TKeyProviderFn<
  * const MyKey = createKey<number>('num');
  * ```
  */
-export interface TKeyBase<
-  T,
-  HasDefault extends boolean,
-  Args extends TArgsBase = [T],
-> {
+export interface TKeyBase<T, HasDefault extends boolean, Args extends TArgsBase = [T]> {
   Consumer: TKeyConsumer<T, HasDefault>;
   Provider: TKeyProviderFn<T, HasDefault, Args>;
   Reset: TKeyProvider<T, HasDefault>;
@@ -67,20 +61,12 @@ export interface TKeyBase<
 /**
  * Type of a key created with `createKey`.
  */
-export type TKey<T, HasDefault extends boolean = false> = TKeyBase<
-  T,
-  HasDefault,
-  [value: T]
->;
+export type TKey<T, HasDefault extends boolean = false> = TKeyBase<T, HasDefault, [value: T]>;
 
 /**
  * Type of a key created with `createEmptyKey`.
  */
-export type TVoidKey<HasDefault extends boolean = false> = TKeyBase<
-  undefined,
-  HasDefault,
-  []
->;
+export type TVoidKey<HasDefault extends boolean = false> = TKeyBase<undefined, HasDefault, []>;
 
 /**
  * Create a key for a Stack
@@ -98,12 +84,7 @@ export function createKey<T>(
   name: string,
   stringify: TStringify<T> = strigifyUnknow,
 ): TKey<T, false> {
-  return createInternal<T, false, [value: T]>(
-    name,
-    stringify,
-    false,
-    undefined,
-  );
+  return createInternal<T, false, [value: T]>(name, stringify, false, undefined);
 }
 
 /**
@@ -123,12 +104,7 @@ export function createKeyWithDefault<T>(
   defaultValue: T,
   stringify: TStringify<T> = strigifyUnknow,
 ): TKey<T, true> {
-  return createInternal<T, true, [value: T]>(
-    name,
-    stringify,
-    true,
-    defaultValue,
-  );
+  return createInternal<T, true, [value: T]>(name, stringify, true, defaultValue);
 }
 
 /**
@@ -139,12 +115,7 @@ export function createKeyWithDefault<T>(
  * @returns A key object with no value.
  */
 export function createEmptyKey(name: string): TVoidKey<false> {
-  return createInternal<undefined, false, []>(
-    name,
-    strigifyEmpty,
-    false,
-    undefined,
-  );
+  return createInternal<undefined, false, []>(name, strigifyEmpty, false, undefined);
 }
 
 function createInternal<T, HasDefault extends boolean, Args extends TArgsBase>(
@@ -189,7 +160,7 @@ function strigifyUnknow(value: unknown): string {
   try {
     const val = JSON.stringify(value);
     return val.length > 60 ? `${val.slice(0, 60 - 3)}...` : val;
-  } catch (_error) {
+  } catch {
     return `[NOT SERIALIZABLE]`;
   }
 }

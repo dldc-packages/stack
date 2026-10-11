@@ -9,17 +9,13 @@ export interface MissingContextErreurData {
   consumer: TKeyConsumer<any, boolean>;
 }
 
-const MissingContextErreurInternal: TErreurStore<MissingContextErreurData> =
-  createErreurStore();
+const MissingContextErreurInternal: TErreurStore<MissingContextErreurData> = createErreurStore();
 
-export function createMissingContextErreur(
-  stack: TStackCoreValue,
-  consumer: TKeyConsumer<any>,
-) {
-  return MissingContextErreurInternal.setAndThrow(
-    `Cannot find context ${consumer.name}`,
-    { consumer, stack },
-  );
+export function createMissingContextErreur(stack: TStackCoreValue, consumer: TKeyConsumer<any>) {
+  return MissingContextErreurInternal.setAndThrow(`Cannot find context ${consumer.name}`, {
+    consumer,
+    stack,
+  });
 }
 
 export const MissingContextErreur = MissingContextErreurInternal.asReadonly;
@@ -28,9 +24,8 @@ export interface InvalidStackSubClassErreurData {
   constructor: Function;
 }
 
-const InvalidStackSubClassErreurInternal: TErreurStore<
-  InvalidStackSubClassErreurData
-> = createErreurStore();
+const InvalidStackSubClassErreurInternal: TErreurStore<InvalidStackSubClassErreurData> =
+  createErreurStore();
 
 export function createInvalidStackSubClassErreur(constructor: Function) {
   return InvalidStackSubClassErreurInternal.setAndThrow(
@@ -39,5 +34,4 @@ export function createInvalidStackSubClassErreur(constructor: Function) {
   );
 }
 
-export const InvalidStackSubClassErreur =
-  InvalidStackSubClassErreurInternal.asReadonly;
+export const InvalidStackSubClassErreur = InvalidStackSubClassErreurInternal.asReadonly;

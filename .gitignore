@@ -16,3 +16,10 @@ jspm_packages/
 .env.test
 
 dist
+
+# pnpm
+pnpm-debug.log*
+.vitest/
+
+# packed tarballs
+*.tgz

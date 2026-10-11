@@ -24,7 +24,15 @@ expect(stack2.get(NumKey.Consumer)).toBe(42);
 ## Installation
 
 ```bash
-deno add jsr:@dldc/stack
+npm install @dldc/stack
+```
+
+If you use `pnpm` or `bun`:
+
+```bash
+pnpm add @dldc/stack
+# or
+bun add @dldc/stack
 ```
 
 ## Usage
